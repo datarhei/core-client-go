@@ -6,7 +6,7 @@ A golang client for the `github.com/datarhei/core` API.
 
 ```
 import (
-    "github.com/datarhei/core-client-go"
+    coreclient "github.com/datarhei/core-client-go"
 )
 
 client, err := coreclient.New(coreclient.Config{

@@ -1,4 +1,4 @@
-package client
+package coreclient
 
 import (
 	"encoding/json"
