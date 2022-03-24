@@ -26,7 +26,7 @@ func (r *restclient) DataList(sort, order string) ([]api.FileInfo, error) {
 	values.Set("sort", sort)
 	values.Set("order", order)
 
-	data, err := r.call("GET", "/data?"+values.Encode(), "", nil)
+	data, err := r.call("GET", "/fs/disk?"+values.Encode(), "", nil)
 	if err != nil {
 		return files, err
 	}
@@ -37,19 +37,19 @@ func (r *restclient) DataList(sort, order string) ([]api.FileInfo, error) {
 }
 
 func (r *restclient) DataHasFile(path string) bool {
-	_, err := r.call("GET", "/data"+path, "", nil)
+	_, err := r.call("GET", "/fs/disk"+path, "", nil)
 
 	return err == nil
 }
 
 func (r *restclient) DataDeleteFile(path string) error {
-	_, err := r.call("DELETE", "/data"+path, "", nil)
+	_, err := r.call("DELETE", "/fs/disk"+path, "", nil)
 
 	return err
 }
 
 func (r *restclient) DataAddFile(path string, data io.Reader) error {
-	_, err := r.call("PUT", "/data"+path, "application/data", data)
+	_, err := r.call("PUT", "/fs/disk"+path, "application/data", data)
 
 	return err
 }

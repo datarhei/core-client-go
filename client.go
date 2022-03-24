@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	corename    = "datarhei-core"
-	coreversion = "^7.0.0"
+	coreapp     = "datarhei-core"
+	coreversion = "^12.0.0"
 	apiversion  = "^3.0.0"
 )
 
@@ -109,8 +109,8 @@ func New(config Config) (RestClient, error) {
 
 	r.about = about
 
-	if r.about.Name != corename {
-		return nil, fmt.Errorf("didn't receive the expected API response (got: %s, want: %s)", r.about.Name, corename)
+	if r.about.App != coreapp {
+		return nil, fmt.Errorf("didn't receive the expected API response (got: %s, want: %s)", r.about.Name, coreapp)
 	}
 
 	if len(r.about.ID) == 0 {
@@ -205,7 +205,7 @@ func (r *restclient) login() error {
 		return err
 	}
 
-	if len(r.about.ID) == 0 {
+	if len(about.ID) == 0 {
 		return fmt.Errorf("login to API failed")
 	}
 
