@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/datarhei/core-client-go/api"
@@ -16,8 +15,7 @@ import (
 
 const (
 	coreapp     = "datarhei-core"
-	coreversion = "^12.0.0"
-	apiversion  = "^3.0.0"
+	coreversion = "^14.0.0"
 )
 
 type HTTPClient interface {
@@ -77,14 +75,14 @@ type Config struct {
 }
 
 type restclient struct {
-	address  string
-	prefix   string
-	token    string
-	expire   time.Time
-	username string
-	password string
-	client   HTTPClient
-	about    api.About
+	address      string
+	prefix       string
+	accessToken  string
+	refreshToken string
+	username     string
+	password     string
+	client       HTTPClient
+	about        api.About
 }
 
 func New(config Config) (RestClient, error) {
@@ -113,12 +111,6 @@ func New(config Config) (RestClient, error) {
 		return nil, fmt.Errorf("didn't receive the expected API response (got: %s, want: %s)", r.about.Name, coreapp)
 	}
 
-	if len(r.about.ID) == 0 {
-		if err := r.login(); err != nil {
-			return nil, err
-		}
-	}
-
 	c, _ := semver.NewConstraint(coreversion)
 	v, err := semver.NewVersion(r.about.Version.Number)
 	if err != nil {
@@ -129,22 +121,24 @@ func New(config Config) (RestClient, error) {
 		return nil, fmt.Errorf("the core version (%s) is not supported (%s)", r.about.Version.Number, coreversion)
 	}
 
-	found := false
-	for _, version := range r.about.Version.API {
-		c, _ := semver.NewConstraint(apiversion)
-		v, err := semver.NewVersion(version)
-		if err != nil {
-			return nil, err
+	if len(r.about.Auths) != 0 {
+		found := false
+		for _, auths := range r.about.Auths {
+			if auths == "localjwt" {
+				found = true
+				break
+			}
 		}
 
-		if c.Check(v) {
-			found = true
-			break
+		if !found {
+			return nil, fmt.Errorf("the API doesn't support login via username/password")
 		}
 	}
 
-	if !found {
-		return nil, fmt.Errorf("this client (%s) doesn't support the availabe API versions: %s", apiversion, strings.Join(r.about.Version.API, ", "))
+	if len(r.about.ID) == 0 {
+		if err := r.login(); err != nil {
+			return nil, err
+		}
 	}
 
 	return r, nil
@@ -197,8 +191,8 @@ func (r *restclient) login() error {
 
 	json.Unmarshal(body, &jwt)
 
-	r.token = jwt.Token
-	r.expire.UnmarshalText([]byte(jwt.Expire))
+	r.accessToken = jwt.AccessToken
+	r.refreshToken = jwt.RefreshToken
 
 	about, err := r.info()
 	if err != nil {
@@ -206,10 +200,40 @@ func (r *restclient) login() error {
 	}
 
 	if len(about.ID) == 0 {
-		return fmt.Errorf("login to API failed")
+		return fmt.Errorf("login to the API failed")
 	}
 
 	r.about = about
+
+	return nil
+}
+
+func (r *restclient) refresh() error {
+	req, err := http.NewRequest("GET", r.address+r.prefix+"/login/refresh", nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+r.refreshToken)
+
+	status, body, err := r.request(req)
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if status != 200 {
+		return fmt.Errorf("invalid refresh token")
+	}
+
+	jwt := api.JWTRefresh{}
+
+	json.Unmarshal(body, &jwt)
+
+	r.accessToken = jwt.AccessToken
 
 	return nil
 }
@@ -220,8 +244,8 @@ func (r *restclient) info() (api.About, error) {
 		return api.About{}, err
 	}
 
-	if len(r.token) != 0 {
-		req.Header.Add("Authorization", "Bearer "+r.token)
+	if len(r.accessToken) != 0 {
+		req.Header.Add("Authorization", "Bearer "+r.accessToken)
 	}
 
 	status, body, err := r.request(req)
@@ -250,17 +274,22 @@ func (r *restclient) call(method, path, contentType string, data io.Reader) ([]b
 		req.Header.Add("Content-Type", contentType)
 	}
 
-	if len(r.token) != 0 {
-		req.Header.Add("Authorization", "Bearer "+r.token)
+	if len(r.accessToken) != 0 {
+		req.Header.Add("Authorization", "Bearer "+r.accessToken)
 	}
 
 	status, body, err := r.request(req)
 	if status == http.StatusUnauthorized {
-		if err := r.login(); err != nil {
-			return nil, err
+		if err := r.refresh(); err != nil {
+			if err := r.login(); err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Authorization", "Bearer "+r.accessToken)
+			status, body, err = r.request(req)
 		}
 
-		req.Header.Set("Authorization", "Bearer "+r.token)
+		req.Header.Set("Authorization", "Bearer "+r.accessToken)
 		status, body, err = r.request(req)
 	}
 
