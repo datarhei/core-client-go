@@ -15,7 +15,7 @@ import (
 
 const (
 	coreapp     = "datarhei-core"
-	coreversion = "^14.0.0"
+	coreversion = "^16.0.0"
 )
 
 type HTTPClient interface {
