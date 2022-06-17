@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core-client-go/v14/api"
 )
 
 func (r *restclient) ProcessList(id []string, filter []string) ([]api.Process, error) {

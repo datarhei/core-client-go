@@ -3,7 +3,7 @@ package coreclient
 import (
 	"encoding/json"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core-client-go/v14/api"
 )
 
 func (r *restclient) Skills() (api.Skills, error) {
