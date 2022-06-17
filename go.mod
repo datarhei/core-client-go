@@ -1,4 +1,4 @@
-module github.com/datarhei/core-client-go
+module github.com/datarhei/core-client-go/v12
 
 go 1.16
 

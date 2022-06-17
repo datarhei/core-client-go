@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core-client-go/v12/api"
 
 	"github.com/Masterminds/semver/v3"
 )

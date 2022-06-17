@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core-client-go/v12/api"
 )
 
 func (r *restclient) MemFSList(sort, order string) ([]api.FileInfo, error) {
