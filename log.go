@@ -3,11 +3,11 @@ package coreclient
 import (
 	"encoding/json"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core/http/api"
 )
 
-func (r *restclient) Log() (api.Log, error) {
-	var log api.Log
+func (r *restclient) Log() ([]api.LogEvent, error) {
+	var log []api.LogEvent
 
 	data, err := r.call("GET", "/log", "", nil)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core/http/api"
 )
 
 func (r *restclient) Config() (api.Config, error) {

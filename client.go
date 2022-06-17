@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core/http/api"
 
 	"github.com/Masterminds/semver/v3"
 )
@@ -38,7 +38,7 @@ type RestClient interface {
 	DataDeleteFile(path string) error
 	DataAddFile(path string, data io.Reader) error
 
-	Log() (api.Log, error)
+	Log() ([]api.LogEvent, error)
 
 	MemFSList(sort, order string) ([]api.FileInfo, error)
 	MemFSHasFile(path string) bool

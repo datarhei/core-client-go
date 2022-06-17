@@ -1,0 +1,66 @@
+# github.com/Masterminds/semver/v3 v3.1.1
+## explicit
+github.com/Masterminds/semver/v3
+# github.com/atrox/haikunatorgo/v2 v2.0.1
+github.com/atrox/haikunatorgo/v2
+# github.com/datarhei/core v0.0.0-20220603152152-9746248c10bf
+## explicit
+github.com/datarhei/core/config
+github.com/datarhei/core/encoding/json
+github.com/datarhei/core/ffmpeg
+github.com/datarhei/core/ffmpeg/parse
+github.com/datarhei/core/ffmpeg/probe
+github.com/datarhei/core/ffmpeg/skills
+github.com/datarhei/core/http/api
+github.com/datarhei/core/http/cors
+github.com/datarhei/core/io/file
+github.com/datarhei/core/io/fs
+github.com/datarhei/core/log
+github.com/datarhei/core/math/rand
+github.com/datarhei/core/monitor
+github.com/datarhei/core/monitor/metric
+github.com/datarhei/core/net
+github.com/datarhei/core/net/url
+github.com/datarhei/core/playout
+github.com/datarhei/core/process
+github.com/datarhei/core/psutil
+github.com/datarhei/core/restream
+github.com/datarhei/core/restream/app
+github.com/datarhei/core/restream/fs
+github.com/datarhei/core/restream/store
+github.com/datarhei/core/session
+# github.com/go-ole/go-ole v1.2.6
+github.com/go-ole/go-ole
+github.com/go-ole/go-ole/oleutil
+# github.com/google/uuid v1.3.0
+github.com/google/uuid
+# github.com/lithammer/shortuuid/v4 v4.0.0
+github.com/lithammer/shortuuid/v4
+# github.com/lufia/plan9stats v0.0.0-20220517141722-cf486979b281
+github.com/lufia/plan9stats
+# github.com/mattn/go-isatty v0.0.14
+github.com/mattn/go-isatty
+# github.com/power-devops/perfstat v0.0.0-20220216144756-c35f1ee13d7c
+github.com/power-devops/perfstat
+# github.com/prep/average v0.0.0-20200506183628-d26c465f48c3
+github.com/prep/average
+# github.com/shirou/gopsutil/v3 v3.22.5
+## explicit
+github.com/shirou/gopsutil/v3/cpu
+github.com/shirou/gopsutil/v3/disk
+github.com/shirou/gopsutil/v3/internal/common
+github.com/shirou/gopsutil/v3/mem
+github.com/shirou/gopsutil/v3/net
+github.com/shirou/gopsutil/v3/process
+# github.com/tklauser/go-sysconf v0.3.10
+github.com/tklauser/go-sysconf
+# github.com/tklauser/numcpus v0.5.0
+github.com/tklauser/numcpus
+# github.com/yusufpapurcu/wmi v1.2.2
+github.com/yusufpapurcu/wmi
+# golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c
+## explicit
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+golang.org/x/sys/windows/registry
