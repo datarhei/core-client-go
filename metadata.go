@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/datarhei/core-client-go/api/v7"
+	"github.com/datarhei/core-client-go/v7/api"
 )
 
 func (r *restclient) Metadata(id, key string) (api.Metadata, error) {

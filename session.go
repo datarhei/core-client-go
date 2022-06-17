@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/datarhei/core-client-go/api/v7"
+	"github.com/datarhei/core-client-go/v7/api"
 )
 
 func (r *restclient) Sessions(collectors []string) (api.SessionsSummary, error) {
