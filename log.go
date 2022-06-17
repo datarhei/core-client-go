@@ -3,7 +3,7 @@ package coreclient
 import (
 	"encoding/json"
 
-	"github.com/datarhei/core-client-go/api"
+	"github.com/datarhei/core-client-go/api/v7"
 )
 
 func (r *restclient) Log() (api.Log, error) {
