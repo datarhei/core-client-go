@@ -23,3 +23,12 @@ if err != nil {
     ...
 }
 ```
+
+## Versioning
+
+The version of this module is according to which version of the datarhei Core API
+you want to connect to. Check the branches to find out which other versions are
+implemented. If you want to connect to an API version 12, you have to import the client
+module of the version 12, i.e. `import "github.com/datarhei/core-client-go/v12"`.
+
+The latest implementation is on the `main` branch.
