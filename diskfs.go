@@ -19,7 +19,7 @@ const (
 	ORDER_DESC    = "desc"
 )
 
-func (r *restclient) DataList(sort, order string) ([]api.FileInfo, error) {
+func (r *restclient) DiskFSList(sort, order string) ([]api.FileInfo, error) {
 	var files []api.FileInfo
 
 	values := url.Values{}
@@ -36,19 +36,19 @@ func (r *restclient) DataList(sort, order string) ([]api.FileInfo, error) {
 	return files, err
 }
 
-func (r *restclient) DataHasFile(path string) bool {
+func (r *restclient) DiskFSHasFile(path string) bool {
 	_, err := r.call("GET", "/fs/disk"+path, "", nil)
 
 	return err == nil
 }
 
-func (r *restclient) DataDeleteFile(path string) error {
+func (r *restclient) DiskFSDeleteFile(path string) error {
 	_, err := r.call("DELETE", "/fs/disk"+path, "", nil)
 
 	return err
 }
 
-func (r *restclient) DataAddFile(path string, data io.Reader) error {
+func (r *restclient) DiskFSAddFile(path string, data io.Reader) error {
 	_, err := r.call("PUT", "/fs/disk"+path, "application/data", data)
 
 	return err

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/datarhei/core/http/api"
@@ -23,57 +24,76 @@ type HTTPClient interface {
 }
 
 type RestClient interface {
+	// String returns a string representation of the connection
 	String() string
+
+	// ID returns the ID of the connected datarhei Core
 	ID() string
+
+	// Address returns the address of the connected datarhei Core
 	Address() string
 
-	About() api.About
+	About() api.About // GET /
 
-	Config() (api.Config, error)
-	ConfigSet(config api.ConfigData) error
-	ConfigReload() error
+	Config() (api.Config, error)           // GET /config
+	ConfigSet(config api.ConfigData) error // POST /config
+	ConfigReload() error                   // GET /config/reload
 
-	DataList(sort, order string) ([]api.FileInfo, error)
-	DataHasFile(path string) bool
-	DataDeleteFile(path string) error
-	DataAddFile(path string, data io.Reader) error
+	DiskFSList(sort, order string) ([]api.FileInfo, error) // GET /fs/disk
+	DiskFSHasFile(path string) bool                        // GET /fs/disk/{path}
+	DiskFSDeleteFile(path string) error                    // DELETE /fs/disk/{path}
+	DiskFSAddFile(path string, data io.Reader) error       // PUT /fs/disk/{path}
 
-	Log() ([]api.LogEvent, error)
+	MemFSList(sort, order string) ([]api.FileInfo, error) // GET /fs/mem
+	MemFSHasFile(path string) bool                        // GET /fs/mem/{path}
+	MemFSDeleteFile(path string) error                    // DELETE /fs/mem/{path}
+	MemFSAddFile(path string, data io.Reader) error       // PUT /fs/mem/{path}
 
-	MemFSList(sort, order string) ([]api.FileInfo, error)
-	MemFSHasFile(path string) bool
-	MemFSDeleteFile(path string) error
-	MemFSAddFile(path string, data io.Reader) error
+	Log() ([]api.LogEvent, error) // GET /log
 
-	Metadata(id, key string) (api.Metadata, error)
-	MetadataSet(id, key string, metadata api.Metadata) error
+	Metadata(id, key string) (api.Metadata, error)           // GET /metadata/{key}
+	MetadataSet(id, key string, metadata api.Metadata) error // PUT /metadata/{key}
 
-	ProcessList(id, filter []string) ([]api.Process, error)
-	Process(id string, filter []string) (api.Process, error)
-	ProcessAdd(p api.ProcessConfig) error
-	ProcessDelete(id string) error
-	ProcessCommand(id, command string) error
-	ProcessProbe(id string) (api.Probe, error)
-	ProcessConfig(id string) (api.ProcessConfig, error)
-	ProcessReport(id string) (api.ProcessReport, error)
-	ProcessState(id string) (api.ProcessState, error)
-	ProcessMetadata(id, key string) (api.Metadata, error)
-	ProcessMetadataSet(id, key string, metadata api.Metadata) error
+	Metrics(api.MetricsQuery) (api.MetricsResponse, error) // POST /metrics
 
-	Skills() (api.Skills, error)
-	SkillsReload() error
+	ProcessList(id, filter []string) ([]api.Process, error)         // GET /process
+	Process(id string, filter []string) (api.Process, error)        // GET /process/{id}
+	ProcessAdd(p api.ProcessConfig) error                           // POST /process
+	ProcessDelete(id string) error                                  // DELETE /process/{id}
+	ProcessCommand(id, command string) error                        // PUT /process/{id}/command
+	ProcessProbe(id string) (api.Probe, error)                      // GET /process/{id}/probe
+	ProcessConfig(id string) (api.ProcessConfig, error)             // GET /process/{id}/config
+	ProcessReport(id string) (api.ProcessReport, error)             // GET /process/{id}/report
+	ProcessState(id string) (api.ProcessState, error)               // GET /process/{id}/state
+	ProcessMetadata(id, key string) (api.Metadata, error)           // GET /process/{id}/metadata/{key}
+	ProcessMetadataSet(id, key string, metadata api.Metadata) error // PUT /process/{id}/metadata/{key}
 
-	Sessions(collectors []string) (api.SessionsSummary, error)
-	SessionsActive(collectors []string) (api.SessionsActive, error)
+	RTMPChannels() (api.RTMPChannel, error) // GET /rtmp
+
+	Sessions(collectors []string) (api.SessionsSummary, error)      // GET /session
+	SessionsActive(collectors []string) (api.SessionsActive, error) // GET /session/active
+
+	Skills() (api.Skills, error) // GET /skills
+	SkillsReload() error         // GET /skills/reload
 }
 
+// Config is the configuration for a new REST API client.
 type Config struct {
-	Address  string
+	// Address is the address of the datarhei Core to connect to.
+	Address string
+
+	// Username and Password are credentials to authorize access to the API.
 	Username string
 	Password string
-	Client   HTTPClient
+
+	// Auth0Token is a valid Auth0 token to authorize access to the API.
+	Auth0Token string
+
+	// Client is a HTTPClient that will be used for the API calls. Optional.
+	Client HTTPClient
 }
 
+// restclient implements the RestClient interface.
 type restclient struct {
 	address      string
 	prefix       string
@@ -81,17 +101,21 @@ type restclient struct {
 	refreshToken string
 	username     string
 	password     string
+	auth0Token   string
 	client       HTTPClient
 	about        api.About
 }
 
+// New returns a new REST API client for the given config. The error is non-nil
+// in case of an error.
 func New(config Config) (RestClient, error) {
 	r := &restclient{
-		address:  config.Address,
-		prefix:   "/api",
-		username: config.Username,
-		password: config.Password,
-		client:   config.Client,
+		address:    config.Address,
+		prefix:     "/api",
+		username:   config.Username,
+		password:   config.Password,
+		auth0Token: config.Auth0Token,
+		client:     config.Client,
 	}
 
 	if r.client == nil {
@@ -121,20 +145,6 @@ func New(config Config) (RestClient, error) {
 		return nil, fmt.Errorf("the core version (%s) is not supported (%s)", r.about.Version.Number, coreversion)
 	}
 
-	if len(r.about.Auths) != 0 {
-		found := false
-		for _, auths := range r.about.Auths {
-			if auths == "localjwt" {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return nil, fmt.Errorf("the API doesn't support login via username/password")
-		}
-	}
-
 	if len(r.about.ID) == 0 {
 		if err := r.login(); err != nil {
 			return nil, err
@@ -161,9 +171,44 @@ func (r *restclient) About() api.About {
 }
 
 func (r *restclient) login() error {
-	login := api.Login{
-		Username: r.username,
-		Password: r.password,
+	login := api.Login{}
+
+	hasLocalJWT := false
+	useLocalJWT := false
+	hasAuth0 := false
+	useAuth0 := false
+
+	for _, auths := range r.about.Auths {
+		if auths == "localjwt" {
+			hasLocalJWT = true
+			break
+		} else if strings.HasPrefix(auths, "auth0 ") {
+			hasAuth0 = true
+			break
+		}
+	}
+
+	if !hasLocalJWT && !hasAuth0 {
+		return fmt.Errorf("the API doesn't provide any supported auth method")
+	}
+
+	if len(r.auth0Token) != 0 && hasAuth0 {
+		useAuth0 = true
+	}
+
+	if !useAuth0 {
+		if (len(r.username) != 0 || len(r.password) != 0) && hasLocalJWT {
+			useLocalJWT = true
+		}
+	}
+
+	if !useAuth0 && !useLocalJWT {
+		return fmt.Errorf("none of the provided auth credentials can be used")
+	}
+
+	if useLocalJWT {
+		login.Username = r.username
+		login.Password = r.password
 	}
 
 	var buf bytes.Buffer
@@ -177,6 +222,9 @@ func (r *restclient) login() error {
 	}
 
 	req.Header.Add("Content-Type", "application/json")
+	if useAuth0 {
+		req.Header.Add("Authorization", "Bearer "+r.auth0Token)
+	}
 
 	status, body, err := r.request(req)
 	if err != nil {
