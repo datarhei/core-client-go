@@ -3,32 +3,44 @@
 github.com/Masterminds/semver/v3
 # github.com/atrox/haikunatorgo/v2 v2.0.1
 github.com/atrox/haikunatorgo/v2
-# github.com/datarhei/core v0.0.0-20220603152152-9746248c10bf
+# github.com/benburkert/openpgp v0.0.0-20160410205803-c2471f86866c
+github.com/benburkert/openpgp/aes/keywrap
+# github.com/datarhei/core/v16 v16.9.1
 ## explicit
-github.com/datarhei/core/config
-github.com/datarhei/core/encoding/json
-github.com/datarhei/core/ffmpeg
-github.com/datarhei/core/ffmpeg/parse
-github.com/datarhei/core/ffmpeg/probe
-github.com/datarhei/core/ffmpeg/skills
-github.com/datarhei/core/http/api
-github.com/datarhei/core/http/cors
-github.com/datarhei/core/io/file
-github.com/datarhei/core/io/fs
-github.com/datarhei/core/log
-github.com/datarhei/core/math/rand
-github.com/datarhei/core/monitor
-github.com/datarhei/core/monitor/metric
-github.com/datarhei/core/net
-github.com/datarhei/core/net/url
-github.com/datarhei/core/playout
-github.com/datarhei/core/process
-github.com/datarhei/core/psutil
-github.com/datarhei/core/restream
-github.com/datarhei/core/restream/app
-github.com/datarhei/core/restream/fs
-github.com/datarhei/core/restream/store
-github.com/datarhei/core/session
+github.com/datarhei/core/v16/config
+github.com/datarhei/core/v16/encoding/json
+github.com/datarhei/core/v16/ffmpeg
+github.com/datarhei/core/v16/ffmpeg/parse
+github.com/datarhei/core/v16/ffmpeg/prelude
+github.com/datarhei/core/v16/ffmpeg/probe
+github.com/datarhei/core/v16/ffmpeg/skills
+github.com/datarhei/core/v16/http/api
+github.com/datarhei/core/v16/http/cors
+github.com/datarhei/core/v16/io/file
+github.com/datarhei/core/v16/io/fs
+github.com/datarhei/core/v16/log
+github.com/datarhei/core/v16/math/rand
+github.com/datarhei/core/v16/monitor
+github.com/datarhei/core/v16/monitor/metric
+github.com/datarhei/core/v16/net
+github.com/datarhei/core/v16/net/url
+github.com/datarhei/core/v16/playout
+github.com/datarhei/core/v16/process
+github.com/datarhei/core/v16/psutil
+github.com/datarhei/core/v16/restream
+github.com/datarhei/core/v16/restream/app
+github.com/datarhei/core/v16/restream/fs
+github.com/datarhei/core/v16/restream/replace
+github.com/datarhei/core/v16/restream/store
+github.com/datarhei/core/v16/session
+github.com/datarhei/core/v16/srt
+# github.com/datarhei/gosrt v0.1.2
+github.com/datarhei/gosrt
+github.com/datarhei/gosrt/internal/circular
+github.com/datarhei/gosrt/internal/congestion
+github.com/datarhei/gosrt/internal/crypto
+github.com/datarhei/gosrt/internal/net
+github.com/datarhei/gosrt/internal/packet
 # github.com/go-ole/go-ole v1.2.6
 github.com/go-ole/go-ole
 github.com/go-ole/go-ole/oleutil
@@ -44,8 +56,7 @@ github.com/mattn/go-isatty
 github.com/power-devops/perfstat
 # github.com/prep/average v0.0.0-20200506183628-d26c465f48c3
 github.com/prep/average
-# github.com/shirou/gopsutil/v3 v3.22.5
-## explicit
+# github.com/shirou/gopsutil/v3 v3.22.6
 github.com/shirou/gopsutil/v3/cpu
 github.com/shirou/gopsutil/v3/disk
 github.com/shirou/gopsutil/v3/internal/common
@@ -58,8 +69,9 @@ github.com/tklauser/go-sysconf
 github.com/tklauser/numcpus
 # github.com/yusufpapurcu/wmi v1.2.2
 github.com/yusufpapurcu/wmi
-# golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c
-## explicit
+# golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+golang.org/x/crypto/pbkdf2
+# golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows

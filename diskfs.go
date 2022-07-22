@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/datarhei/core/http/api"
+	"github.com/datarhei/core/v16/http/api"
 )
 
 const (

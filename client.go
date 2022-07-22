@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/datarhei/core/http/api"
+	"github.com/datarhei/core/v16/http/api"
 
 	"github.com/Masterminds/semver/v3"
 )

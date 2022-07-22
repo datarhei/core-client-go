@@ -18,7 +18,7 @@ if err != nil {
     ...
 }
 
-processes, err := client.ProcessList(nil, nil)
+processes, err := client.ProcessList("", "")
 if err != nil {
     ...
 }

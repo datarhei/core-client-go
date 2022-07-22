@@ -14,7 +14,7 @@ Example for retrieving a list of all processes:
 		...
 	}
 
-	processes, err := client.ProcessList(nil, nil)
+	processes, err := client.ProcessList("", "")
 	if err != nil {
 		...
 	}
