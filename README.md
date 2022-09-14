@@ -49,7 +49,7 @@ if err != nil {
 
 -   `GET` /api
 
-    ```python
+    ```golang
     About()
     ```
 
