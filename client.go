@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/datarhei/core/v16/http/api"
+	"github.com/datarhei/core-client-go/v16/api"
 
 	"github.com/Masterminds/semver/v3"
 )
 
 const (
 	coreapp     = "datarhei-core"
-	coreversion = "^16.0.0"
+	coreversion = "^16.10.0"
 )
 
 type HTTPClient interface {
@@ -35,46 +35,55 @@ type RestClient interface {
 
 	About() api.About // GET /
 
-	Config() (api.Config, error)           // GET /config
-	ConfigSet(config api.ConfigData) error // POST /config
-	ConfigReload() error                   // GET /config/reload
+	Config() (api.Config, error)          // GET /config
+	ConfigSet(config api.ConfigSet) error // POST /config
+	ConfigReload() error                  // GET /config/reload
 
-	DiskFSList(sort, order string) ([]api.FileInfo, error) // GET /fs/disk
-	DiskFSHasFile(path string) bool                        // GET /fs/disk/{path}
-	DiskFSDeleteFile(path string) error                    // DELETE /fs/disk/{path}
-	DiskFSAddFile(path string, data io.Reader) error       // PUT /fs/disk/{path}
+	Graph(query api.GraphQuery) (api.GraphResponse, error) // POST /graph
 
-	MemFSList(sort, order string) ([]api.FileInfo, error) // GET /fs/mem
-	MemFSHasFile(path string) bool                        // GET /fs/mem/{path}
-	MemFSDeleteFile(path string) error                    // DELETE /fs/mem/{path}
-	MemFSAddFile(path string, data io.Reader) error       // PUT /fs/mem/{path}
+	DiskFSList(sort, order string) ([]api.FileInfo, error) // GET /v3/fs/disk
+	DiskFSHasFile(path string) bool                        // HEAD /v3/fs/disk/{path}
+	DiskFSGetFile(path string) (io.ReadCloser, error)      // GET /v3/fs/disk/{path}
+	DiskFSDeleteFile(path string) error                    // DELETE /v3/fs/disk/{path}
+	DiskFSAddFile(path string, data io.Reader) error       // PUT /v3/fs/disk/{path}
+
+	MemFSList(sort, order string) ([]api.FileInfo, error) // GET /v3/fs/mem
+	MemFSHasFile(path string) bool                        // HEAD /v3/fs/mem/{path}
+	MemFSGetFile(path string) (io.ReadCloser, error)      // GET /v3/fs/mem/{path}
+	MemFSDeleteFile(path string) error                    // DELETE /v3/fs/mem/{path}
+	MemFSAddFile(path string, data io.Reader) error       // PUT /v3/fs/mem/{path}
 
 	Log() ([]api.LogEvent, error) // GET /log
 
-	Metadata(id, key string) (api.Metadata, error)           // GET /metadata/{key}
-	MetadataSet(id, key string, metadata api.Metadata) error // PUT /metadata/{key}
+	Metadata(id, key string) (api.Metadata, error)           // GET /v3/metadata/{key}
+	MetadataSet(id, key string, metadata api.Metadata) error // PUT /v3/metadata/{key}
 
-	Metrics(api.MetricsQuery) (api.MetricsResponse, error) // POST /metrics
+	MetricsList() ([]api.MetricsDescription, error)              // GET /v3/metrics
+	Metrics(query api.MetricsQuery) (api.MetricsResponse, error) // POST /v3/metrics
 
-	ProcessList(id, filter []string) ([]api.Process, error)         // GET /process
-	Process(id string, filter []string) (api.Process, error)        // GET /process/{id}
-	ProcessAdd(p api.ProcessConfig) error                           // POST /process
-	ProcessDelete(id string) error                                  // DELETE /process/{id}
-	ProcessCommand(id, command string) error                        // PUT /process/{id}/command
-	ProcessProbe(id string) (api.Probe, error)                      // GET /process/{id}/probe
-	ProcessConfig(id string) (api.ProcessConfig, error)             // GET /process/{id}/config
-	ProcessReport(id string) (api.ProcessReport, error)             // GET /process/{id}/report
-	ProcessState(id string) (api.ProcessState, error)               // GET /process/{id}/state
-	ProcessMetadata(id, key string) (api.Metadata, error)           // GET /process/{id}/metadata/{key}
-	ProcessMetadataSet(id, key string, metadata api.Metadata) error // PUT /process/{id}/metadata/{key}
+	ProcessList(opts ProcessListOptions) ([]api.Process, error)     // GET /v3/process
+	ProcessAdd(p api.ProcessConfig) error                           // POST /v3/process
+	Process(id string, filter []string) (api.Process, error)        // GET /v3/process/{id}
+	ProcessUpdate(id string, p api.ProcessConfig) error             // PUT /v3/process/{id}
+	ProcessDelete(id string) error                                  // DELETE /v3/process/{id}
+	ProcessCommand(id, command string) error                        // PUT /v3/process/{id}/command
+	ProcessProbe(id string) (api.Probe, error)                      // GET /v3/process/{id}/probe
+	ProcessConfig(id string) (api.ProcessConfig, error)             // GET /v3/process/{id}/config
+	ProcessReport(id string) (api.ProcessReport, error)             // GET /v3/process/{id}/report
+	ProcessState(id string) (api.ProcessState, error)               // GET /v3/process/{id}/state
+	ProcessMetadata(id, key string) (api.Metadata, error)           // GET /v3/process/{id}/metadata/{key}
+	ProcessMetadataSet(id, key string, metadata api.Metadata) error // PUT /v3/process/{id}/metadata/{key}
 
-	RTMPChannels() (api.RTMPChannel, error) // GET /rtmp
+	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
+	SRTChannels() (api.SRTChannels, error)    // GET /v3/srt
 
-	Sessions(collectors []string) (api.SessionsSummary, error)      // GET /session
-	SessionsActive(collectors []string) (api.SessionsActive, error) // GET /session/active
+	Sessions(collectors []string) (api.SessionsSummary, error)      // GET /v3/session
+	SessionsActive(collectors []string) (api.SessionsActive, error) // GET /v3/session/active
 
-	Skills() (api.Skills, error) // GET /skills
-	SkillsReload() error         // GET /skills/reload
+	Skills() (api.Skills, error) // GET /v3/skills
+	SkillsReload() error         // GET /v3/skills/reload
+
+	WidgetProcess(id string) (api.WidgetProcess, error) // GET /v3/widget/process/{id}
 }
 
 // Config is the configuration for a new REST API client.
@@ -235,9 +244,11 @@ func (r *restclient) login() error {
 		return fmt.Errorf("wrong username and/or password")
 	}
 
+	data, _ := io.ReadAll(body)
+
 	jwt := api.JWT{}
 
-	json.Unmarshal(body, &jwt)
+	json.Unmarshal(data, &jwt)
 
 	r.accessToken = jwt.AccessToken
 	r.refreshToken = jwt.RefreshToken
@@ -277,9 +288,11 @@ func (r *restclient) refresh() error {
 		return fmt.Errorf("invalid refresh token")
 	}
 
+	data, _ := io.ReadAll(body)
+
 	jwt := api.JWTRefresh{}
 
-	json.Unmarshal(body, &jwt)
+	json.Unmarshal(data, &jwt)
 
 	r.accessToken = jwt.AccessToken
 
@@ -305,15 +318,17 @@ func (r *restclient) info() (api.About, error) {
 		return api.About{}, fmt.Errorf("access to API failed (%d)", status)
 	}
 
+	data, _ := io.ReadAll(body)
+
 	about := api.About{}
 
-	json.Unmarshal(body, &about)
+	json.Unmarshal(data, &about)
 
 	return about, nil
 }
 
-func (r *restclient) call(method, path, contentType string, data io.Reader) ([]byte, error) {
-	req, err := http.NewRequest(method, r.address+r.prefix+"/v3"+path, data)
+func (r *restclient) stream(method, path, contentType string, data io.Reader) (io.ReadCloser, error) {
+	req, err := http.NewRequest(method, r.address+r.prefix+path, data)
 	if err != nil {
 		return nil, err
 	}
@@ -332,9 +347,6 @@ func (r *restclient) call(method, path, contentType string, data io.Reader) ([]b
 			if err := r.login(); err != nil {
 				return nil, err
 			}
-
-			req.Header.Set("Authorization", "Bearer "+r.accessToken)
-			status, body, err = r.request(req)
 		}
 
 		req.Header.Set("Authorization", "Bearer "+r.accessToken)
@@ -348,7 +360,11 @@ func (r *restclient) call(method, path, contentType string, data io.Reader) ([]b
 	if status < 200 || status >= 300 {
 		e := api.Error{}
 
-		json.Unmarshal(body, &e)
+		defer body.Close()
+
+		x, _ := io.ReadAll(body)
+
+		json.Unmarshal(x, &e)
 
 		return nil, fmt.Errorf("%w", e)
 	}
@@ -356,15 +372,24 @@ func (r *restclient) call(method, path, contentType string, data io.Reader) ([]b
 	return body, nil
 }
 
-func (r *restclient) request(req *http.Request) (int, []byte, error) {
+func (r *restclient) call(method, path, contentType string, data io.Reader) ([]byte, error) {
+	body, err := r.stream(method, path, contentType, data)
+	if err != nil {
+		return nil, err
+	}
+
+	defer body.Close()
+
+	x, err := io.ReadAll(body)
+
+	return x, err
+}
+
+func (r *restclient) request(req *http.Request) (int, io.ReadCloser, error) {
 	resp, err := r.client.Do(req)
 	if err != nil {
 		return -1, nil, err
 	}
 
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	return resp.StatusCode, body, nil
+	return resp.StatusCode, resp.Body, nil
 }

@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/datarhei/core/v16/http/api"
+	"github.com/datarhei/core-client-go/v16/api"
 )
 
 const (
@@ -26,7 +26,7 @@ func (r *restclient) DiskFSList(sort, order string) ([]api.FileInfo, error) {
 	values.Set("sort", sort)
 	values.Set("order", order)
 
-	data, err := r.call("GET", "/fs/disk?"+values.Encode(), "", nil)
+	data, err := r.call("GET", "/v3/fs/disk?"+values.Encode(), "", nil)
 	if err != nil {
 		return files, err
 	}
@@ -37,19 +37,23 @@ func (r *restclient) DiskFSList(sort, order string) ([]api.FileInfo, error) {
 }
 
 func (r *restclient) DiskFSHasFile(path string) bool {
-	_, err := r.call("GET", "/fs/disk"+path, "", nil)
+	_, err := r.call("HEAD", "/v3/fs/disk"+path, "", nil)
 
 	return err == nil
 }
 
+func (r *restclient) DiskFSGetFile(path string) (io.ReadCloser, error) {
+	return r.stream("GET", "/v3/fs/disk"+path, "", nil)
+}
+
 func (r *restclient) DiskFSDeleteFile(path string) error {
-	_, err := r.call("DELETE", "/fs/disk"+path, "", nil)
+	_, err := r.call("DELETE", "/v3/fs/disk"+path, "", nil)
 
 	return err
 }
 
 func (r *restclient) DiskFSAddFile(path string, data io.Reader) error {
-	_, err := r.call("PUT", "/fs/disk"+path, "application/data", data)
+	_, err := r.call("PUT", "/v3/fs/disk"+path, "application/data", data)
 
 	return err
 }

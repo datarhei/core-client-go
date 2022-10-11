@@ -6,10 +6,10 @@ import (
 	"github.com/datarhei/core-client-go/v16/api"
 )
 
-func (r *restclient) RTMPChannels() ([]api.RTMPChannel, error) {
-	var m []api.RTMPChannel
+func (r *restclient) SRTChannels() (api.SRTChannels, error) {
+	var m api.SRTChannels
 
-	data, err := r.call("GET", "/v3/rtmp", "", nil)
+	data, err := r.call("GET", "/v3/srt", "", nil)
 	if err != nil {
 		return m, err
 	}

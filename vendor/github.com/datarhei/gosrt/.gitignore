@@ -1,7 +1,0 @@
-/contrib/server/server*
-/contrib/client/client*
-*.prof
-*.out
-*.html
-*.ts
-*.mp4
