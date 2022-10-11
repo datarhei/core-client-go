@@ -37,7 +37,7 @@ if err != nil {
     ...
 }
 
-processes, err := client.ProcessList("", "")
+processes, err := client.ProcessList(coreclient.ProcessListOptions{})
 if err != nil {
     ...
 }
@@ -50,7 +50,7 @@ if err != nil {
 -   `GET` /api
 
     ```golang
-    About()
+    About() api.About
     ```
 
 ### Config
@@ -58,17 +58,19 @@ if err != nil {
 -   `GET` /api/v3/config
 
     ```golang
-    Config()
+    Config() (api.Config, error)
     ```
 
 -   `PUT` /api/v3/config
+
     ```golang
-    ConfigSet(config api.ConfigData)
+    ConfigSet(config api.ConfigSet) error
     ```
 
 -   `GET` /api/v3/config/reload
+
     ```golang
-    ConfigReload()
+    ConfigReload() error
     ```
 
 ### Disk filesystem
@@ -76,22 +78,30 @@ if err != nil {
 -   `GET` /api/v3/fs/disk
 
     ```golang
-    DiskFSList(sort, order string)
+    DiskFSList(sort, order string) ([]api.FileInfo, error)
     ```
 
--   `GET` /api/v3/fs/disk/{path}
+-   `HEAD` /api/v3/fs/disk/{path}
+
     ```golang
     DiskFSHasFile(path string) bool
     ```
 
--   `DELETE` /api/v3/fs/disk/{path}
+-   `GET` /api/v3/fs/disk/{path}
+
     ```golang
-    DiskFSDeleteFile(path string)
+    DiskFSGetFile(path string) (io.ReadCloser, error)
+    ```
+
+-   `DELETE` /api/v3/fs/disk/{path}
+
+    ```golang
+    DiskFSDeleteFile(path string) error
     ```
 
 -   `PUT` /api/v3/fs/disk/{path}
     ```golang
-    DiskFSAddFile(path string, data io.Reader)
+    DiskFSAddFile(path string, data io.Reader) error
     ```
 
 ### In-memory filesystem
@@ -99,22 +109,30 @@ if err != nil {
 -   `GET` /api/v3/fs/mem
 
     ```golang
-    MemFSList(sort, order string)
+    MemFSList(sort, order string) ([]api.FileInfo, error)
     ```
 
--   `GET` /api/v3/fs/mem/{path}
+-   `HEAD` /api/v3/fs/mem/{path}
+
     ```golang
     MemFSHasFile(path string) bool
     ```
 
--   `DELETE` /api/v3/fs/mem/{path}
+-   `GET` /api/v3/fs/mem/{path}
+
     ```golang
-    MemFSDeleteFile(path string)
+    MemFSGetFile(path string) (io.ReadCloser, error)
+    ```
+
+-   `DELETE` /api/v3/fs/mem/{path}
+
+    ```golang
+    MemFSDeleteFile(path string) error
     ```
 
 -   `PUT` /api/v3/fs/mem/{path}
     ```golang
-    MemFSAddFile(path string, data io.Reader)
+    MemFSAddFile(path string, data io.Reader) error
     ```
 
 ### Log
@@ -122,7 +140,7 @@ if err != nil {
 -   `GET` /api/v3/log
 
     ```golang
-    Log()
+    Log() ([]api.LogEvent, error)
     ```
 
 ### Metadata
@@ -130,20 +148,26 @@ if err != nil {
 -   `GET` /api/v3/metadata/{key}
 
     ```golang
-    Metadata(id, key string)
+    Metadata(id, key string) (api.Metadata, error)
     ```
 
 -   `PUT` /api/v3/metadata/{key}
     ```golang
-    MetadataSet(id, key string, metadata api.Metadata)
+    MetadataSet(id, key string, metadata api.Metadata) error
     ```
 
-### Metadata
+### Metrics
+
+-   `GET` /api/v3/metrics
+
+    ```golang
+    MetricsList() ([]api.MetricsDescription, error)
+    ```
 
 -   `POST` /api/v3/metrics
 
     ```golang
-    Metrics(api.MetricsQuery)
+    Metrics(query api.MetricsQuery) (api.MetricsResponse, error)
     ```
 
 ### Process
@@ -151,57 +175,72 @@ if err != nil {
 -   `GET` /api/v3/process
 
     ```golang
-    ProcessList(id, filter []string)
+    ProcessList(opts ProcessListOptions) ([]api.Process, error)
     ```
 
 -   `POST` /api/v3/process
+
     ```golang
-    ProcessAdd(p api.ProcessConfig)
+    ProcessAdd(p api.ProcessConfig) error
     ```
 
 -   `GET` /api/v3/process/{id}
+
     ```golang
-    Process(id string, filter []string)
+    Process(id string, filter []string) (api.Process, error)
+    ```
+
+-   `PUT` /api/v3/process/{id}
+
+    ```golang
+    ProcessUpdate(id string, p api.ProcessConfig) error
     ```
 
 -   `DELETE` /api/v3/process/{id}
+
     ```golang
-    ProcessDelete(id string)
+    ProcessDelete(id string) error
     ```
 
 -   `PUT` /api/v3/process/{id}/command
+
     ```golang
-    ProcessCommand(id, command string)
+    ProcessCommand(id, command string) error
     ```
 
 -   `GET` /api/v3/process/{id}/probe
+
     ```golang
-    ProcessProbe(id string)
+    ProcessProbe(id string) (api.Probe, error)
     ```
 
 -   `GET` /api/v3/process/{id}/config
+
     ```golang
-    ProcessConfig(id string)
+    ProcessConfig(id string) (api.ProcessConfig, error)
     ```
 
 -   `GET` /api/v3/process/{id}/report
+
     ```golang
-    ProcessReport(id string)
+    ProcessReport(id string) (api.ProcessReport, error)
     ```
 
 -   `GET` /api/v3/process/{id}/state
+
     ```golang
-    ProcessState(id string) 
+    ProcessState(id string) (api.ProcessState, error)
     ```
 
 -   `GET` /api/v3/process/{id}/metadata/{key}
+
     ```golang
-    ProcessMetadata(id, key string)
+    ProcessMetadata(id, key string) (api.Metadata, error)
     ```
 
 -   `PUT` /api/v3/process/{id}/metadata/{key}
     ```golang
-    ProcessMetadataSet(id, key string, metadata api.Metadata)
+    ProcessMetadataSet(id, key string, metadata api.Metadata) error
     ```
 
 ### RTMP
@@ -209,7 +248,15 @@ if err != nil {
 -   `GET` /api/v3/rtmp
 
     ```golang
-    RTMPChannels()
+    RTMPChannels() ([]api.RTMPChannel, error)
+    ```
+
+### SRT
+
+-   `GET` /api/v3/srt
+
+    ```golang
+    SRTChannels() (api.SRTChannels, error)
     ```
 
 ### Session
@@ -217,12 +264,12 @@ if err != nil {
 -   `GET` /api/v3/session
 
     ```golang
-    Sessions(collectors []string)
+    Sessions(collectors []string) (api.SessionsSummary, error)
     ```
 
 -   `GET` /api/v3/session/active
     ```golang
-    SessionsActive(collectors []string) 
+    SessionsActive(collectors []string) (api.SessionsActive, error)
     ```
 
 ### Skills
@@ -230,12 +277,20 @@ if err != nil {
 -   `GET` /api/v3/skills
 
     ```golang
-    Skills()
+    Skills() (api.Skills, error)
     ```
 
 -   `GET` /api/v3/skills/reload
     ```golang
-    SkillsReload() 
+    SkillsReload() error
+    ```
+
+### Widget
+
+-   `GET` /api/v3/widget
+
+    ```golang
+    WidgetProcess(id string) (api.WidgetProcess, error)
     ```
 
 ## Versioning
@@ -249,7 +304,7 @@ The latest implementation is on the `main` branch.
 
 ## Contributing
 
-Found a mistake or misconduct? Create a [issue](https://github.com/datarhei/core-client-go/issues) or send a pull-request.    
+Found a mistake or misconduct? Create a [issue](https://github.com/datarhei/core-client-go/issues) or send a pull-request.
 Suggestions for improvement are welcome.
 
 ## Licence
