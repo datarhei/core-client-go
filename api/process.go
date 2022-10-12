@@ -69,7 +69,7 @@ type ProcessState struct {
 	Reconnect int64     `json:"reconnect_seconds"`
 	LastLog   string    `json:"last_logline"`
 	Progress  *Progress `json:"progress"`
-	Memory    uint64    `json:"memory_bytes"`
-	CPU       float64   `json:"cpu_usage" swaggertype:"number" jsonschema:"type=number"`
+	Memory    uint64    `json:"memory_bytes"`                                            // bytes
+	CPU       float64   `json:"cpu_usage" swaggertype:"number" jsonschema:"type=number"` // percent
 	Command   []string  `json:"command"`
 }

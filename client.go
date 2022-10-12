@@ -30,6 +30,9 @@ type RestClient interface {
 	// ID returns the ID of the connected datarhei Core
 	ID() string
 
+	// Tokens returns the access and refresh token of the current session
+	Tokens() (string, string)
+
 	// Address returns the address of the connected datarhei Core
 	Address() string
 
@@ -91,9 +94,13 @@ type Config struct {
 	// Address is the address of the datarhei Core to connect to.
 	Address string
 
-	// Username and Password are credentials to authorize access to the API.
+	// Username and password are credentials to authorize access to the API.
 	Username string
 	Password string
+
+	// Access and refresh token from an existing session to authorize access to the API.
+	AccessToken  string
+	RefreshToken string
 
 	// Auth0Token is a valid Auth0 token to authorize access to the API.
 	Auth0Token string
@@ -119,12 +126,14 @@ type restclient struct {
 // in case of an error.
 func New(config Config) (RestClient, error) {
 	r := &restclient{
-		address:    config.Address,
-		prefix:     "/api",
-		username:   config.Username,
-		password:   config.Password,
-		auth0Token: config.Auth0Token,
-		client:     config.Client,
+		address:      config.Address,
+		prefix:       "/api",
+		username:     config.Username,
+		password:     config.Password,
+		accessToken:  config.AccessToken,
+		refreshToken: config.RefreshToken,
+		auth0Token:   config.Auth0Token,
+		client:       config.Client,
 	}
 
 	if r.client == nil {
@@ -169,6 +178,10 @@ func (r restclient) String() string {
 
 func (r *restclient) ID() string {
 	return r.about.ID
+}
+
+func (r *restclient) Tokens() (string, string) {
+	return r.accessToken, r.refreshToken
 }
 
 func (r *restclient) Address() string {
