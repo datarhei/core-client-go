@@ -7,20 +7,34 @@ import (
 	"github.com/datarhei/core-client-go/v16/api"
 )
 
-func (r *restclient) Config() (api.Config, error) {
-	var config api.Config
+type configVersion struct {
+	Config struct {
+		Version int64 `json:"version"`
+	} `json:"config"`
+}
+
+func (r *restclient) Config() (int64, api.Config, error) {
+	version := configVersion{}
 
 	data, err := r.call("GET", "/v3/config", "", nil)
 	if err != nil {
-		return config, err
+		return 0, api.Config{}, err
 	}
 
-	err = json.Unmarshal(data, &config)
+	if err := json.Unmarshal(data, &version); err != nil {
+		return 0, api.Config{}, err
+	}
 
-	return config, err
+	config := api.Config{}
+
+	if err := json.Unmarshal(data, &config); err != nil {
+		return 0, api.Config{}, err
+	}
+
+	return version.Config.Version, config, nil
 }
 
-func (r *restclient) ConfigSet(config api.ConfigSet) error {
+func (r *restclient) ConfigSet(config interface{}) error {
 	var buf bytes.Buffer
 
 	e := json.NewEncoder(&buf)

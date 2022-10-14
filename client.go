@@ -16,7 +16,8 @@ import (
 
 const (
 	coreapp     = "datarhei-core"
-	coreversion = "^16.10.0"
+	coremajor   = 16
+	coreversion = "^16.7.2" // first public release
 )
 
 type HTTPClient interface {
@@ -38,9 +39,9 @@ type RestClient interface {
 
 	About() api.About // GET /
 
-	Config() (api.Config, error)          // GET /config
-	ConfigSet(config api.ConfigSet) error // POST /config
-	ConfigReload() error                  // GET /config/reload
+	Config() (int64, api.Config, error) // GET /config
+	ConfigSet(config interface{}) error // POST /config
+	ConfigReload() error                // GET /config/reload
 
 	Graph(query api.GraphQuery) (api.GraphResponse, error) // POST /graph
 
@@ -55,6 +56,12 @@ type RestClient interface {
 	MemFSGetFile(path string) (io.ReadCloser, error)      // GET /v3/fs/mem/{path}
 	MemFSDeleteFile(path string) error                    // DELETE /v3/fs/mem/{path}
 	MemFSAddFile(path string, data io.Reader) error       // PUT /v3/fs/mem/{path}
+
+	FilesystemList(name, pattern, sort, order string) ([]api.FileInfo, error) // GET /v3/fs/{name}
+	FilesystemHasFile(name, path string) bool                                 // HEAD /v3/fs/{name}/{path}
+	FilesystemGetFile(name, path string) (io.ReadCloser, error)               // GET /v3/fs/{name}/{path}
+	FilesystemDeleteFile(name, path string) error                             // DELETE /v3/fs/{name}/{path}
+	FilesystemAddFile(name, path string, data io.Reader) error                // PUT /v3/fs/{name}/{path}
 
 	Log() ([]api.LogEvent, error) // GET /log
 
@@ -120,6 +127,11 @@ type restclient struct {
 	auth0Token   string
 	client       HTTPClient
 	about        api.About
+
+	version struct {
+		connectedCore *semver.Version
+		methods       map[string]*semver.Constraints
+	}
 }
 
 // New returns a new REST API client for the given config. The error is non-nil
@@ -153,17 +165,38 @@ func New(config Config) (RestClient, error) {
 		return nil, fmt.Errorf("didn't receive the expected API response (got: %s, want: %s)", r.about.Name, coreapp)
 	}
 
-	c, _ := semver.NewConstraint(coreversion)
-	v, err := semver.NewVersion(r.about.Version.Number)
-	if err != nil {
-		return nil, err
+	mustNewConstraint := func(constraint string) *semver.Constraints {
+		v, _ := semver.NewConstraint(constraint)
+		return v
 	}
 
-	if !c.Check(v) {
-		return nil, fmt.Errorf("the core version (%s) is not supported (%s)", r.about.Version.Number, coreversion)
+	r.version.methods = map[string]*semver.Constraints{
+		"GET/api/v3/srt":     mustNewConstraint("^16.9.0"),
+		"GET/api/v3/metrics": mustNewConstraint("^16.10.0"),
 	}
 
-	if len(r.about.ID) == 0 {
+	if len(r.about.ID) != 0 {
+		c, _ := semver.NewConstraint(coreversion)
+		v, err := semver.NewVersion(r.about.Version.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		if !c.Check(v) {
+			return nil, fmt.Errorf("the core version (%s) is not supported, because a version %s is required", r.about.Version.Number, coreversion)
+		}
+
+		r.version.connectedCore = v
+	} else {
+		v, err := semver.NewVersion(r.about.Version.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		if coremajor != v.Major() {
+			return nil, fmt.Errorf("the core major version (%d) is not supported, because %d is required", v.Major(), coremajor)
+		}
+
 		if err := r.login(); err != nil {
 			return nil, err
 		}
@@ -275,7 +308,31 @@ func (r *restclient) login() error {
 		return fmt.Errorf("login to the API failed")
 	}
 
+	c, _ := semver.NewConstraint(coreversion)
+	v, err := semver.NewVersion(about.Version.Number)
+	if err != nil {
+		return err
+	}
+
+	if !c.Check(v) {
+		return fmt.Errorf("the core version (%s) is not supported, because a version %s is required", about.Version.Number, coreversion)
+	}
+
+	r.version.connectedCore = v
 	r.about = about
+
+	return nil
+}
+
+func (r *restclient) checkVersion(method, path string) error {
+	c := r.version.methods[method+path]
+	if c == nil {
+		return nil
+	}
+
+	if !c.Check(r.version.connectedCore) {
+		return fmt.Errorf("this method is only available in version %s of the core", c.String())
+	}
 
 	return nil
 }
@@ -341,6 +398,10 @@ func (r *restclient) info() (api.About, error) {
 }
 
 func (r *restclient) stream(method, path, contentType string, data io.Reader) (io.ReadCloser, error) {
+	if err := r.checkVersion(method, r.prefix+path); err != nil {
+		return nil, err
+	}
+
 	req, err := http.NewRequest(method, r.address+r.prefix+path, data)
 	if err != nil {
 		return nil, err

@@ -1,48 +1,27 @@
 package coreclient
 
 import (
-	"encoding/json"
 	"io"
-	"net/url"
 
 	"github.com/datarhei/core-client-go/v16/api"
 )
 
 func (r *restclient) MemFSList(sort, order string) ([]api.FileInfo, error) {
-	var files []api.FileInfo
-
-	values := url.Values{}
-	values.Set("sort", sort)
-	values.Set("order", order)
-
-	data, err := r.call("GET", "/v3/fs/mem?"+values.Encode(), "", nil)
-	if err != nil {
-		return files, err
-	}
-
-	err = json.Unmarshal(data, &files)
-
-	return files, err
+	return r.FilesystemList("mem", "", sort, order)
 }
 
 func (r *restclient) MemFSHasFile(path string) bool {
-	_, err := r.call("HEAD", "/v3/fs/mem"+path, "", nil)
-
-	return err == nil
+	return r.FilesystemHasFile("mem", path)
 }
 
 func (r *restclient) MemFSGetFile(path string) (io.ReadCloser, error) {
-	return r.stream("GET", "/v3/fs/mem"+path, "", nil)
+	return r.FilesystemGetFile("mem", path)
 }
 
 func (r *restclient) MemFSDeleteFile(path string) error {
-	_, err := r.call("DELETE", "/v3/fs/mem"+path, "", nil)
-
-	return err
+	return r.FilesystemDeleteFile("mem", path)
 }
 
 func (r *restclient) MemFSAddFile(path string, data io.Reader) error {
-	_, err := r.call("PUT", "/v3/fs/mem"+path, "application/data", data)
-
-	return err
+	return r.FilesystemAddFile("mem", path, data)
 }
