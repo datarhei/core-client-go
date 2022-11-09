@@ -8,10 +8,10 @@ import (
 	"github.com/datarhei/core-client-go/v16/api"
 )
 
-func (r *restclient) Metadata(id, key string) (api.Metadata, error) {
+func (r *restclient) Metadata(key string) (api.Metadata, error) {
 	var m api.Metadata
 
-	path := "/v3/process/" + url.PathEscape(id) + "/metadata"
+	path := "/v3/metadata"
 	if len(key) != 0 {
 		path += "/" + url.PathEscape(key)
 	}
@@ -26,13 +26,18 @@ func (r *restclient) Metadata(id, key string) (api.Metadata, error) {
 	return m, err
 }
 
-func (r *restclient) MetadataSet(id, key string, metadata api.Metadata) error {
+func (r *restclient) MetadataSet(key string, metadata api.Metadata) error {
 	var buf bytes.Buffer
 
 	e := json.NewEncoder(&buf)
 	e.Encode(metadata)
 
-	_, err := r.call("PUT", "/v3/process/"+url.PathEscape(id)+"/metadata/"+url.PathEscape(key), "application/json", &buf)
+	path := "/v3/metadata"
+	if len(key) != 0 {
+		path += "/" + url.PathEscape(key)
+	}
+
+	_, err := r.call("PUT", path, "application/json", &buf)
 	if err != nil {
 		return err
 	}

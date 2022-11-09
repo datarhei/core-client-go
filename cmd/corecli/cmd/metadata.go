@@ -4,18 +4,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// metadataProcessCmd represents the metrics command
-var metadataProcessCmd = &cobra.Command{
+// metadataCmd represents the metrics command
+var metadataCmd = &cobra.Command{
 	Use:   "metadata",
-	Short: "Process metadata related commands",
-	Long:  "Process metadata related commands",
+	Short: "Metadata related commands",
+	Long:  "Metadata related commands",
 	//Run: func(cmd *cobra.Command, args []string) {
 	//	fmt.Println("process called")
 	//},
 }
 
 func init() {
-	processCmd.AddCommand(metadataProcessCmd)
+	rootCmd.AddCommand(metadataCmd)
 
 	// Here you will define your flags and configuration settings.
 

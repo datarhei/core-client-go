@@ -65,8 +65,8 @@ type RestClient interface {
 
 	Log() ([]api.LogEvent, error) // GET /log
 
-	Metadata(id, key string) (api.Metadata, error)           // GET /v3/metadata/{key}
-	MetadataSet(id, key string, metadata api.Metadata) error // PUT /v3/metadata/{key}
+	Metadata(key string) (api.Metadata, error)           // GET /v3/metadata/{key}
+	MetadataSet(key string, metadata api.Metadata) error // PUT /v3/metadata/{key}
 
 	MetricsList() ([]api.MetricsDescription, error)              // GET /v3/metrics
 	Metrics(query api.MetricsQuery) (api.MetricsResponse, error) // POST /v3/metrics
@@ -440,7 +440,7 @@ func (r *restclient) stream(method, path, contentType string, data io.Reader) (i
 
 		json.Unmarshal(x, &e)
 
-		return nil, fmt.Errorf("%w", e)
+		return nil, e
 	}
 
 	return body, nil

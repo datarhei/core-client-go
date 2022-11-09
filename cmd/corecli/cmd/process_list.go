@@ -90,6 +90,9 @@ var listProcessCmd = &cobra.Command{
 
 		t.SortBy([]table.SortBy{
 			{Number: 2, Mode: table.Asc},
+			{Number: 1, Mode: table.Asc},
+			{Number: 3, Mode: table.Asc},
+			{Number: 5, Mode: table.Dsc},
 		})
 
 		t.SetStyle(table.StyleLight)
