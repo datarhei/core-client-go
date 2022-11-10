@@ -57,6 +57,7 @@ var editMetadataCmd = &cobra.Command{
 
 		if !modified {
 			// They are the same, nothing has been changed. No need to store the metadata
+			fmt.Printf("No changes. Metadata will not be updated.")
 			return nil
 		}
 
@@ -82,6 +83,11 @@ func init() {
 }
 
 func editData(data []byte) ([]byte, bool, error) {
+	editor, _, err := getEditor()
+	if err != nil {
+		return nil, false, err
+	}
+
 	file, err := os.CreateTemp("", "corecli_*")
 	if err != nil {
 		return nil, false, err
@@ -99,7 +105,7 @@ func editData(data []byte) ([]byte, bool, error) {
 	}
 
 	for {
-		editor := exec.Command("nano", filename)
+		editor := exec.Command(editor, filename)
 		editor.Stdout = os.Stdout
 		editor.Stderr = os.Stderr
 		editor.Stdin = os.Stdin

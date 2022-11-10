@@ -43,6 +43,7 @@ func init() {
 }
 
 func initConfig() {
+	viper.SetDefault("editor", "")
 	viper.SetDefault("cores.selected", "")
 	viper.SetDefault("cores.list", map[string]string{})
 
@@ -61,8 +62,6 @@ func initConfig() {
 		viper.SetConfigName(".corecli")
 		viper.SafeWriteConfig()
 	}
-
-	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
