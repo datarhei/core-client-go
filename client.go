@@ -397,6 +397,15 @@ func (r *restclient) info() (api.About, error) {
 	return about, nil
 }
 
+func (r *restclient) request(req *http.Request) (int, io.ReadCloser, error) {
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return -1, nil, err
+	}
+
+	return resp.StatusCode, resp.Body, nil
+}
+
 func (r *restclient) stream(method, path, contentType string, data io.Reader) (io.ReadCloser, error) {
 	if err := r.checkVersion(method, r.prefix+path); err != nil {
 		return nil, err
@@ -432,13 +441,29 @@ func (r *restclient) stream(method, path, contentType string, data io.Reader) (i
 	}
 
 	if status < 200 || status >= 300 {
-		e := api.Error{}
+		e := api.Error{
+			Code: status,
+		}
 
 		defer body.Close()
 
-		x, _ := io.ReadAll(body)
+		data, err := io.ReadAll(body)
+		if err != nil {
+			return nil, e
+		}
 
-		json.Unmarshal(x, &e)
+		e.Body = data
+
+		err = json.Unmarshal(data, &e)
+		if err != nil {
+			return nil, e
+		}
+
+		// In case it's not an api.Error, reconstruct the return code. With this
+		// and the body, the caller can reconstruct the correct error.
+		if e.Code == 0 {
+			e.Code = status
+		}
 
 		return nil, e
 	}
@@ -457,13 +482,4 @@ func (r *restclient) call(method, path, contentType string, data io.Reader) ([]b
 	x, err := io.ReadAll(body)
 
 	return x, err
-}
-
-func (r *restclient) request(req *http.Request) (int, io.ReadCloser, error) {
-	resp, err := r.client.Do(req)
-	if err != nil {
-		return -1, nil, err
-	}
-
-	return resp.StatusCode, resp.Body, nil
 }

@@ -42,6 +42,16 @@ func (r *restclient) ConfigSet(config interface{}) error {
 
 	_, err := r.call("PUT", "/v3/config", "application/json", &buf)
 
+	if e, ok := err.(api.Error); ok {
+		if e.Code == 409 {
+			ce := api.ConfigError{}
+			if err := json.Unmarshal(e.Body, &ce); err != nil {
+				return e
+			}
+			return ce
+		}
+	}
+
 	return err
 }
 

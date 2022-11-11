@@ -1,6 +1,10 @@
 package api
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 type ConfigV1 struct {
 	Version         int64  `json:"version" jsonschema:"minimum=1,maximum=1"`
@@ -461,3 +465,13 @@ type Auth0Tenant struct {
 
 // ConfigError is used to return error messages when uploading a new config
 type ConfigError map[string][]string
+
+func (c ConfigError) Error() string {
+	s := strings.Builder{}
+
+	for key, messages := range map[string][]string(c) {
+		s.WriteString(fmt.Sprintf("%s: %s", key, strings.Join(messages, ",")))
+	}
+
+	return s.String()
+}

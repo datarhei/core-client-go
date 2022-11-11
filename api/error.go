@@ -10,6 +10,7 @@ type Error struct {
 	Code    int      `json:"code" jsonschema:"required"`
 	Message string   `json:"message" jsonschema:""`
 	Details []string `json:"details" jsonschema:""`
+	Body    []byte   `json:"-"`
 }
 
 // Error returns the string representation of the error
