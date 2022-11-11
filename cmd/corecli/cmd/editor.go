@@ -1,13 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"os/exec"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // editorCmd represents the metrics command
@@ -44,24 +40,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// processCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func getEditor() (string, string, error) {
-	editor := viper.GetString("editor")
-	if len(editor) == 0 {
-		editor = os.Getenv("EDITOR")
-	}
-
-	if len(editor) == 0 {
-		return "", "", fmt.Errorf("no editor defined")
-	}
-
-	path, err := exec.LookPath(editor)
-	if err != nil {
-		if !errors.Is(err, exec.ErrDot) {
-			return "", "", fmt.Errorf("%s: %w", editor, err)
-		}
-	}
-
-	return editor, path, nil
 }

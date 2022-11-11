@@ -1,17 +1,14 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	coreclient "github.com/datarhei/core-client-go/v16"
-
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
-	"github.com/tidwall/pretty"
 )
 
 // listProcessCmd represents the list command
@@ -101,43 +98,6 @@ var listProcessCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func formatJSON(d interface{}, useColor bool) (string, error) {
-	data, err := json.Marshal(d)
-	if err != nil {
-		return "", err
-	}
-
-	data = pretty.PrettyOptions(data, &pretty.Options{
-		Width:    pretty.DefaultOptions.Width,
-		Prefix:   pretty.DefaultOptions.Prefix,
-		Indent:   pretty.DefaultOptions.Indent,
-		SortKeys: true,
-	})
-
-	if !useColor {
-		return string(data), nil
-	}
-
-	data = pretty.Color(data, nil)
-
-	return string(data), nil
-}
-
-func formatByteCountBinary(b uint64) string {
-	const unit = 1024
-	if b < unit {
-		return fmt.Sprintf("%d  B", b)
-	}
-
-	div, exp := uint64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-
-	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 func init() {
