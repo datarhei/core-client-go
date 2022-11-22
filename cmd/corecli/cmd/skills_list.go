@@ -31,8 +31,6 @@ var listSkillsCmd = &cobra.Command{
 		var d interface{}
 
 		switch name {
-		case "":
-			d = skills
 		case "ffmpeg":
 			d = skills.FFmpeg
 		case "filters":
@@ -47,6 +45,8 @@ var listSkillsCmd = &cobra.Command{
 			d = skills.Formats
 		case "protocols":
 			d = skills.Protocols
+		default:
+			d = skills
 		}
 
 		f, err := formatJSON(d, true)
