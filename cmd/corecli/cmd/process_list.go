@@ -44,12 +44,20 @@ var listProcessCmd = &cobra.Command{
 
 		t := table.NewWriter()
 
-		t.AppendHeader(table.Row{"ID", "Reference", "State", "Memory", "CPU", "Runtime"})
+		t.AppendHeader(table.Row{"ID", "Reference", "Order", "State", "Memory", "CPU", "Runtime"})
 
 		for _, p := range list {
 			runtime := p.State.Runtime
 			if p.State.State != "running" {
 				runtime = 0
+			}
+
+			order := strings.ToUpper(p.State.Order)
+			switch order {
+			case "START":
+				order = text.FgGreen.Sprint(order)
+			case "STOP":
+				order = text.Colors{text.FgWhite, text.Faint}.Sprint(order)
 			}
 
 			state := strings.ToUpper(p.State.State)
@@ -71,6 +79,7 @@ var listProcessCmd = &cobra.Command{
 			t.AppendRow(table.Row{
 				p.ID,
 				p.Reference,
+				order,
 				state,
 				formatByteCountBinary(p.State.Memory),
 				fmt.Sprintf("%.1f%%", p.State.CPU),
@@ -83,13 +92,14 @@ var listProcessCmd = &cobra.Command{
 			{Number: 4, Align: text.AlignRight},
 			{Number: 5, Align: text.AlignRight},
 			{Number: 6, Align: text.AlignRight},
+			{Number: 7, Align: text.AlignRight},
 		})
 
 		t.SortBy([]table.SortBy{
 			{Number: 2, Mode: table.Asc},
 			{Number: 1, Mode: table.Asc},
-			{Number: 3, Mode: table.Asc},
-			{Number: 5, Mode: table.Dsc},
+			{Number: 4, Mode: table.Asc},
+			{Number: 6, Mode: table.Dsc},
 		})
 
 		t.SetStyle(table.StyleLight)
