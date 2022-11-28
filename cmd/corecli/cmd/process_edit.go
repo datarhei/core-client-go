@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/datarhei/core-client-go/v16/api"
 	"github.com/spf13/cobra"
@@ -49,12 +50,9 @@ var editProcessCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(config, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, config, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return client.ProcessUpdate(id, config)
 	},

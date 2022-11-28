@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/datarhei/core-client-go/v16/api"
 
@@ -47,12 +47,9 @@ var templateProcessCmd = &cobra.Command{
 			Limits:         api.ProcessConfigLimits{},
 		}
 
-		f, err := formatJSON(config, false)
-		if err != nil {
+		if err := writeJSON(os.Stdout, config, false); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

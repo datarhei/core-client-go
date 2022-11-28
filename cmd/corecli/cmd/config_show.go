@@ -27,12 +27,12 @@ var showConfigCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(config.Config, false)
-		if err != nil {
-			return err
-		}
-
 		if target != "-" {
+			f, err := formatJSON(config.Config, false)
+			if err != nil {
+				return err
+			}
+
 			file, err := os.Create(target)
 			if err != nil {
 				return err
@@ -44,7 +44,9 @@ var showConfigCmd = &cobra.Command{
 				return err
 			}
 		} else {
-			fmt.Println(f)
+			if err := writeJSON(os.Stdout, config.Config, true); err != nil {
+				return err
+			}
 		}
 
 		t := table.NewWriter()

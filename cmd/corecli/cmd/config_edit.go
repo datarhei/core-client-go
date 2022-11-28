@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -48,12 +49,9 @@ var editConfigCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(editedConfig, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, editedConfig, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return client.ConfigSet(editedConfig)
 	},

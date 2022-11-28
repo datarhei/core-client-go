@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -49,12 +49,9 @@ var listSkillsCmd = &cobra.Command{
 			d = skills
 		}
 
-		f, err := formatJSON(d, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, d, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

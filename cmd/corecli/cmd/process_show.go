@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -56,12 +57,9 @@ var showProcessCmd = &cobra.Command{
 		}
 
 		if asRaw {
-			f, err := formatJSON(process, true)
-			if err != nil {
+			if err := writeJSON(os.Stdout, process, true); err != nil {
 				return err
 			}
-
-			fmt.Println(f)
 
 			return nil
 		}

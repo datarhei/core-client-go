@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -29,12 +29,9 @@ var showMetadataProcessCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(metadata, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, metadata, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

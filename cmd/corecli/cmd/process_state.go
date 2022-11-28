@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -25,12 +25,9 @@ var stateProcessCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(state, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, state, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

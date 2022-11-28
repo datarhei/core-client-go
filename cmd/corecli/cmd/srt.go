@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -22,12 +22,9 @@ var srtCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(srt, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, srt, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

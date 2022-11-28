@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"os/exec"
 
 	coreclient "github.com/datarhei/core-client-go/v16"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/viper"
 	"github.com/tidwall/pretty"
 )
@@ -277,6 +279,29 @@ func formatJSON(d interface{}, useColor bool) (string, error) {
 	data = pretty.Color(data, nil)
 
 	return string(data), nil
+}
+
+func writeJSON(w io.Writer, d interface{}, useColor bool) error {
+	color := useColor
+
+	if color {
+		if w, ok := w.(*os.File); ok {
+			if !isatty.IsTerminal(w.Fd()) && !isatty.IsCygwinTerminal(w.Fd()) {
+				color = false
+			}
+		} else {
+			color = false
+		}
+	}
+
+	data, err := formatJSON(d, color)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(w, data)
+
+	return nil
 }
 
 func formatByteCountBinary(b uint64) string {

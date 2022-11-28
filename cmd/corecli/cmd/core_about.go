@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -19,12 +19,9 @@ var aboutCoreCmd = &cobra.Command{
 
 		about := client.About()
 
-		f, err := formatJSON(about, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, about, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return nil
 	},

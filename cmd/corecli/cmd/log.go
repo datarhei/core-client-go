@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -23,13 +23,9 @@ var logCmd = &cobra.Command{
 		}
 
 		for _, l := range logs {
-
-			f, err := formatJSON(l, true)
-			if err != nil {
+			if err := writeJSON(os.Stdout, l, true); err != nil {
 				return err
 			}
-
-			fmt.Println(f)
 		}
 
 		return nil

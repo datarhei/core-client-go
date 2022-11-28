@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/datarhei/core-client-go/v16/api"
 	"github.com/spf13/cobra"
@@ -64,12 +65,9 @@ var editMetadataCmd = &cobra.Command{
 			return err
 		}
 
-		f, err := formatJSON(em, true)
-		if err != nil {
+		if err := writeJSON(os.Stdout, editedData, true); err != nil {
 			return err
 		}
-
-		fmt.Println(f)
 
 		return client.MetadataSet(key, em)
 	},
