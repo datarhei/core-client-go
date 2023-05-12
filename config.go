@@ -31,6 +31,35 @@ func (r *restclient) Config() (int64, api.Config, error) {
 		return 0, api.Config{}, err
 	}
 
+	configdata, err := json.Marshal(config.Config)
+	if err != nil {
+		return 0, api.Config{}, err
+	}
+
+	switch version.Config.Version {
+	case 1:
+		cfg := api.ConfigV1{}
+		err := json.Unmarshal(configdata, &cfg)
+		if err != nil {
+			return 0, api.Config{}, err
+		}
+		config.Config = cfg
+	case 2:
+		cfg := api.ConfigV2{}
+		err := json.Unmarshal(configdata, &cfg)
+		if err != nil {
+			return 0, api.Config{}, err
+		}
+		config.Config = cfg
+	case 3:
+		cfg := api.ConfigV3{}
+		err := json.Unmarshal(configdata, &cfg)
+		if err != nil {
+			return 0, api.Config{}, err
+		}
+		config.Config = cfg
+	}
+
 	return version.Config.Version, config, nil
 }
 
