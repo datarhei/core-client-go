@@ -87,7 +87,7 @@ type RestClient interface {
 	ProcessMetadataSet(id, key string, metadata api.Metadata) error // PUT /v3/process/{id}/metadata/{key}
 
 	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
-	SRTChannels() (api.SRTChannel, error)     // GET /v3/srt
+	SRTChannels() ([]api.SRTChannel, error)   // GET /v3/srt
 
 	Sessions(collectors []string) (api.SessionsSummary, error)      // GET /v3/session
 	SessionsActive(collectors []string) (api.SessionsActive, error) // GET /v3/session/active
