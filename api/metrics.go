@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -30,6 +31,21 @@ type MetricsResponseMetric struct {
 type MetricsResponseValue struct {
 	TS    time.Time `json:"ts"`
 	Value float64   `json:"value"`
+}
+
+// MarshalJSON unmarshals a JSON to MetricsResponseValue
+func (v *MetricsResponseValue) UnmarshalJSON(data []byte) error {
+	x := []float64{}
+
+	err := json.Unmarshal(data, &x)
+	if err != nil {
+		return err
+	}
+
+	v.TS = time.Unix(int64(x[0]), 0)
+	v.Value = x[1]
+
+	return nil
 }
 
 type MetricsResponse struct {

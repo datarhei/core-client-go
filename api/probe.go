@@ -1,33 +1,29 @@
 package api
 
-import (
-	"encoding/json"
-)
-
 // ProbeIO represents a stream of a probed file
 type ProbeIO struct {
 	// common
-	Address  string      `json:"url"`
-	Format   string      `json:"format"`
-	Index    uint64      `json:"index"`
-	Stream   uint64      `json:"stream"`
-	Language string      `json:"language"`
-	Type     string      `json:"type"`
-	Codec    string      `json:"codec"`
-	Coder    string      `json:"coder"`
-	Bitrate  json.Number `json:"bitrate_kbps" swaggertype:"number" jsonschema:"type=number"`
-	Duration json.Number `json:"duration_sec"  swaggertype:"number" jsonschema:"type=number"`
+	Address  string  `json:"url"`
+	Format   string  `json:"format"`
+	Index    uint64  `json:"index" format:"uint64"`
+	Stream   uint64  `json:"stream" format:"uint64"`
+	Language string  `json:"language"`
+	Type     string  `json:"type"`
+	Codec    string  `json:"codec"`
+	Coder    string  `json:"coder"`
+	Bitrate  float64 `json:"bitrate_kbps" swaggertype:"number" jsonschema:"type=number"`
+	Duration float64 `json:"duration_sec"  swaggertype:"number" jsonschema:"type=number"`
 
 	// video
-	FPS    json.Number `json:"fps" swaggertype:"number" jsonschema:"type=number"`
-	Pixfmt string      `json:"pix_fmt"`
-	Width  uint64      `json:"width"`
-	Height uint64      `json:"height"`
+	FPS    float64 `json:"fps" swaggertype:"number" jsonschema:"type=number"`
+	Pixfmt string  `json:"pix_fmt"`
+	Width  uint64  `json:"width" format:"uint64"`
+	Height uint64  `json:"height" format:"uint64"`
 
 	// audio
-	Sampling uint64 `json:"sampling_hz"`
+	Sampling uint64 `json:"sampling_hz" format:"uint64"`
 	Layout   string `json:"layout"`
-	Channels uint64 `json:"channels"`
+	Channels uint64 `json:"channels" format:"uint64"`
 }
 
 // Probe represents the result of probing a file. It has a list of detected streams

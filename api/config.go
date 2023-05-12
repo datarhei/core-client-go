@@ -294,7 +294,7 @@ type ConfigV2 struct {
 }
 
 type ConfigV3 struct {
-	Version         int64  `json:"version" jsonschema:"minimum=3,maximum=3"`
+	Version         int64  `json:"version" jsonschema:"minimum=3,maximum=3" format:"int64"`
 	ID              string `json:"id"`
 	Name            string `json:"name"`
 	Address         string `json:"address"`
@@ -302,7 +302,7 @@ type ConfigV3 struct {
 	Log             struct {
 		Level    string   `json:"level" enums:"debug,info,warn,error,silent" jsonschema:"enum=debug,enum=info,enum=warn,enum=error,enum=silent"`
 		Topics   []string `json:"topics"`
-		MaxLines int      `json:"max_lines"`
+		MaxLines int      `json:"max_lines" format:"int"`
 	} `json:"log"`
 	DB struct {
 		Dir string `json:"dir"`
@@ -348,12 +348,12 @@ type ConfigV3 struct {
 	Storage struct {
 		Disk struct {
 			Dir   string `json:"dir"`
-			Size  int64  `json:"max_size_mbytes"`
+			Size  int64  `json:"max_size_mbytes" format:"int64"`
 			Cache struct {
 				Enable   bool   `json:"enable"`
-				Size     uint64 `json:"max_size_mbytes"`
-				TTL      int64  `json:"ttl_seconds"`
-				FileSize uint64 `json:"max_file_size_mbytes"`
+				Size     uint64 `json:"max_size_mbytes" format:"uint64"`
+				TTL      int64  `json:"ttl_seconds" format:"int64"`
+				FileSize uint64 `json:"max_file_size_mbytes" format:"uint64"`
 				Types    struct {
 					Allow []string `json:"allow"`
 					Block []string `json:"block"`
@@ -366,9 +366,10 @@ type ConfigV3 struct {
 				Username string `json:"username"`
 				Password string `json:"password"`
 			} `json:"auth"`
-			Size  int64 `json:"max_size_mbytes"`
+			Size  int64 `json:"max_size_mbytes" format:"int64"`
 			Purge bool  `json:"purge"`
 		} `json:"memory"`
+		S3   []S3Storage `json:"s3"`
 		CORS struct {
 			Origins []string `json:"origins"`
 		} `json:"cors"`
@@ -394,7 +395,7 @@ type ConfigV3 struct {
 	} `json:"srt"`
 	FFmpeg struct {
 		Binary       string `json:"binary"`
-		MaxProcesses int64  `json:"max_processes"`
+		MaxProcesses int64  `json:"max_processes" format:"int64"`
 		Access       struct {
 			Input struct {
 				Allow []string `json:"allow"`
@@ -406,33 +407,34 @@ type ConfigV3 struct {
 			} `json:"output"`
 		} `json:"access"`
 		Log struct {
-			MaxLines   int `json:"max_lines"`
-			MaxHistory int `json:"max_history"`
+			MaxLines   int `json:"max_lines" format:"int"`
+			MaxHistory int `json:"max_history" format:"int"`
 		} `json:"log"`
 	} `json:"ffmpeg"`
 	Playout struct {
 		Enable  bool `json:"enable"`
-		MinPort int  `json:"min_port"`
-		MaxPort int  `json:"max_port"`
+		MinPort int  `json:"min_port" format:"int"`
+		MaxPort int  `json:"max_port" format:"int"`
 	} `json:"playout"`
 	Debug struct {
-		Profiling bool `json:"profiling"`
-		ForceGC   int  `json:"force_gc"`
+		Profiling   bool  `json:"profiling"`
+		ForceGC     int   `json:"force_gc" format:"int"`
+		MemoryLimit int64 `json:"memory_limit_mbytes" format:"int64"`
 	} `json:"debug"`
 	Metrics struct {
 		Enable           bool  `json:"enable"`
 		EnablePrometheus bool  `json:"enable_prometheus"`
-		Range            int64 `json:"range_sec"`    // seconds
-		Interval         int64 `json:"interval_sec"` // seconds
+		Range            int64 `json:"range_sec" format:"int64"`    // seconds
+		Interval         int64 `json:"interval_sec" format:"int64"` // seconds
 	} `json:"metrics"`
 	Sessions struct {
 		Enable          bool     `json:"enable"`
 		IPIgnoreList    []string `json:"ip_ignorelist"`
-		SessionTimeout  int      `json:"session_timeout_sec"`
+		SessionTimeout  int      `json:"session_timeout_sec" format:"int"`
 		Persist         bool     `json:"persist"`
-		PersistInterval int      `json:"persist_interval_sec"`
-		MaxBitrate      uint64   `json:"max_bitrate_mbit"`
-		MaxSessions     uint64   `json:"max_sessions"`
+		PersistInterval int      `json:"persist_interval_sec" format:"int"`
+		MaxBitrate      uint64   `json:"max_bitrate_mbit" format:"uint64"`
+		MaxSessions     uint64   `json:"max_sessions" format:"uint64"`
 	} `json:"sessions"`
 	Service struct {
 		Enable bool   `json:"enable"`
@@ -461,6 +463,24 @@ type Auth0Tenant struct {
 	Audience string   `json:"audience"`
 	ClientID string   `json:"clientid"`
 	Users    []string `json:"users"`
+}
+
+type S3Storage struct {
+	Name            string        `json:"name"`
+	Mountpoint      string        `json:"mountpoint"`
+	Auth            S3StorageAuth `json:"auth"`
+	Endpoint        string        `json:"endpoint"`
+	AccessKeyID     string        `json:"access_key_id"`
+	SecretAccessKey string        `json:"secret_access_key"`
+	Bucket          string        `json:"bucket"`
+	Region          string        `json:"region"`
+	UseSSL          bool          `json:"use_ssl"`
+}
+
+type S3StorageAuth struct {
+	Enable   bool   `json:"enable"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // ConfigError is used to return error messages when uploading a new config

@@ -5,7 +5,8 @@ type Process struct {
 	ID        string         `json:"id" jsonschema:"minLength=1"`
 	Type      string         `json:"type" jsonschema:"enum=ffmpeg"`
 	Reference string         `json:"reference"`
-	CreatedAt int64          `json:"created_at" jsonschema:"minimum=0"`
+	CreatedAt int64          `json:"created_at" jsonschema:"minimum=0" format:"int64"`
+	UpdatedAt int64          `json:"updated_at" jsonschema:"minimum=0" format:"int64"`
 	Config    *ProcessConfig `json:"config,omitempty"`
 	State     *ProcessState  `json:"state,omitempty"`
 	Report    *ProcessReport `json:"report,omitempty"`
@@ -22,15 +23,15 @@ type ProcessConfigIO struct {
 
 type ProcessConfigIOCleanup struct {
 	Pattern       string `json:"pattern" validate:"required"`
-	MaxFiles      uint   `json:"max_files"`
-	MaxFileAge    uint   `json:"max_file_age_seconds"`
+	MaxFiles      uint   `json:"max_files" format:"uint"`
+	MaxFileAge    uint   `json:"max_file_age_seconds" format:"uint"`
 	PurgeOnDelete bool   `json:"purge_on_delete"`
 }
 
 type ProcessConfigLimits struct {
 	CPU     float64 `json:"cpu_usage" jsonschema:"minimum=0,maximum=100"`
-	Memory  uint64  `json:"memory_mbytes" jsonschema:"minimum=0"`
-	WaitFor uint64  `json:"waitfor_seconds" jsonschema:"minimum=0"`
+	Memory  uint64  `json:"memory_mbytes" jsonschema:"minimum=0" format:"uint64"`
+	WaitFor uint64  `json:"waitfor_seconds" jsonschema:"minimum=0" format:"uint64"`
 }
 
 // ProcessConfig represents the configuration of an ffmpeg process
@@ -42,34 +43,41 @@ type ProcessConfig struct {
 	Output         []ProcessConfigIO   `json:"output" validate:"required"`
 	Options        []string            `json:"options"`
 	Reconnect      bool                `json:"reconnect"`
-	ReconnectDelay uint64              `json:"reconnect_delay_seconds"`
+	ReconnectDelay uint64              `json:"reconnect_delay_seconds" format:"uint64"`
 	Autostart      bool                `json:"autostart"`
-	StaleTimeout   uint64              `json:"stale_timeout_seconds"`
+	StaleTimeout   uint64              `json:"stale_timeout_seconds" format:"uint64"`
 	Limits         ProcessConfigLimits `json:"limits"`
-}
-
-// ProcessReportHistoryEntry represents the logs of a run of a restream process
-type ProcessReportHistoryEntry struct {
-	CreatedAt int64       `json:"created_at"`
-	Prelude   []string    `json:"prelude"`
-	Log       [][2]string `json:"log"`
-}
-
-// ProcessReport represents the current log and the logs of previous runs of a restream process
-type ProcessReport struct {
-	ProcessReportHistoryEntry
-	History []ProcessReportHistoryEntry `json:"history"`
 }
 
 // ProcessState represents the current state of an ffmpeg process
 type ProcessState struct {
 	Order     string    `json:"order" jsonschema:"enum=start,enum=stop"`
 	State     string    `json:"exec" jsonschema:"enum=finished,enum=starting,enum=running,enum=finishing,enum=killed,enum=failed"`
-	Runtime   int64     `json:"runtime_seconds" jsonschema:"minimum=0"`
-	Reconnect int64     `json:"reconnect_seconds"`
+	Runtime   int64     `json:"runtime_seconds" jsonschema:"minimum=0" format:"int64"`
+	Reconnect int64     `json:"reconnect_seconds" format:"int64"`
 	LastLog   string    `json:"last_logline"`
 	Progress  *Progress `json:"progress"`
-	Memory    uint64    `json:"memory_bytes"`                                            // bytes
-	CPU       float64   `json:"cpu_usage" swaggertype:"number" jsonschema:"type=number"` // percent
+	Memory    uint64    `json:"memory_bytes" format:"uint64"`
+	CPU       float64   `json:"cpu_usage" swaggertype:"number" jsonschema:"type=number"`
 	Command   []string  `json:"command"`
+}
+
+type ProcessUsageCPU struct {
+	NCPU    float64 `json:"ncpu" swaggertype:"number" jsonschema:"type=number"`
+	Current float64 `json:"cur" swaggertype:"number" jsonschema:"type=number"`
+	Average float64 `json:"avg" swaggertype:"number" jsonschema:"type=number"`
+	Max     float64 `json:"max" swaggertype:"number" jsonschema:"type=number"`
+	Limit   float64 `json:"limit" swaggertype:"number" jsonschema:"type=number"`
+}
+
+type ProcessUsageMemory struct {
+	Current uint64  `json:"cur" format:"uint64"`
+	Average float64 `json:"avg" swaggertype:"number" jsonschema:"type=number"`
+	Max     uint64  `json:"max" format:"uint64"`
+	Limit   uint64  `json:"limit" format:"uint64"`
+}
+
+type ProcessUsage struct {
+	CPU    ProcessUsageCPU    `json:"cpu_usage"`
+	Memory ProcessUsageMemory `json:"memory_bytes"`
 }
