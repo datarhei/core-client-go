@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -149,6 +150,26 @@ func New(config Config) (RestClient, error) {
 		auth0Token:   config.Auth0Token,
 		client:       config.Client,
 	}
+
+	u, err := url.Parse(r.address)
+	if err != nil {
+		return nil, err
+	}
+
+	username := u.User.Username()
+	if len(username) != 0 {
+		r.username = username
+	}
+
+	if password, ok := u.User.Password(); ok {
+		r.password = password
+	}
+
+	u.User = nil
+	u.RawQuery = ""
+	u.Fragment = ""
+
+	r.address = u.String()
 
 	if r.client == nil {
 		r.client = &http.Client{
