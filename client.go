@@ -37,6 +37,8 @@ type RestClient interface {
 	// Address returns the address of the connected datarhei Core
 	Address() string
 
+	Ping() (bool, time.Duration)
+
 	About() api.About // GET /
 
 	Config() (int64, api.Config, error) // GET /config
@@ -223,6 +225,28 @@ func (r *restclient) Address() string {
 
 func (r *restclient) About() api.About {
 	return r.about
+}
+
+func (r *restclient) Ping() (bool, time.Duration) {
+	req, err := http.NewRequest(http.MethodGet, r.address+"/ping", nil)
+	if err != nil {
+		return false, time.Duration(0)
+	}
+
+	start := time.Now()
+
+	status, body, err := r.request(req)
+	if err != nil {
+		return false, time.Since(start)
+	}
+
+	defer body.Close()
+
+	if status != 200 {
+		return false, time.Since(start)
+	}
+
+	return true, time.Since(start)
 }
 
 func (r *restclient) login() error {
