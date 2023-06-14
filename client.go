@@ -196,6 +196,10 @@ func New(config Config) (RestClient, error) {
 		return nil, fmt.Errorf("didn't receive the expected API response (got: %s, want: %s)", about.Name, coreapp)
 	}
 
+	r.aboutLock.Lock()
+	r.about = about
+	r.aboutLock.Unlock()
+
 	if len(about.ID) != 0 {
 		c, _ := semver.NewConstraint(coreversion)
 		v, err := semver.NewVersion(about.Version.Number)
@@ -208,7 +212,6 @@ func New(config Config) (RestClient, error) {
 		}
 
 		r.aboutLock.Lock()
-		r.about = about
 		r.version.connectedCore = v
 		r.aboutLock.Unlock()
 	} else {
