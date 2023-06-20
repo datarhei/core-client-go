@@ -39,12 +39,14 @@ func (p ProcessID) String() string {
 }
 
 type ProcessListOptions struct {
-	ID         []string
-	Filter     []string
-	Domain     string
-	Reference  string
-	IDPattern  string
-	RefPattern string
+	ID            []string
+	Filter        []string
+	Domain        string
+	Reference     string
+	IDPattern     string
+	RefPattern    string
+	OwnerPattern  string
+	DomainPattern string
 }
 
 func (p *ProcessListOptions) Query() *url.Values {
@@ -55,6 +57,8 @@ func (p *ProcessListOptions) Query() *url.Values {
 	values.Set("reference", p.Reference)
 	values.Set("idpattern", p.IDPattern)
 	values.Set("refpattern", p.RefPattern)
+	values.Set("owenrpattern", p.OwnerPattern)
+	values.Set("domainpattern", p.DomainPattern)
 
 	return values
 }
