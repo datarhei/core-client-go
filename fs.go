@@ -63,7 +63,7 @@ func (r *restclient) FilesystemGetFileOffset(name, path string, offset int64) (i
 
 	if offset > 0 {
 		header = make(http.Header)
-		header.Set("Range", "bytes="+strconv.FormatInt(offset, 10))
+		header.Set("Range", "bytes="+strconv.FormatInt(offset, 10)+"-")
 	}
 
 	return r.stream("GET", "/v3/fs/"+url.PathEscape(name)+path, nil, header, "", nil)
