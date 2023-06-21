@@ -50,7 +50,11 @@ func (r *restclient) FilesystemHasFile(name, path string) bool {
 	return err == nil
 }
 
-func (r *restclient) FilesystemGetFile(name, path string, offset int64) (io.ReadCloser, error) {
+func (r *restclient) FilesystemGetFile(name, path string) (io.ReadCloser, error) {
+	return r.FilesystemGetFileOffset(name, path, 0)
+}
+
+func (r *restclient) FilesystemGetFileOffset(name, path string, offset int64) (io.ReadCloser, error) {
 	if !filepath.IsAbs(path) {
 		path = "/" + path
 	}

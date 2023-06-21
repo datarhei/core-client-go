@@ -61,11 +61,12 @@ type RestClient interface {
 	MemFSDeleteFile(path string) error                    // DELETE /v3/fs/mem/{path}
 	MemFSAddFile(path string, data io.Reader) error       // PUT /v3/fs/mem/{path}
 
-	FilesystemList(name, pattern, sort, order string) ([]api.FileInfo, error) // GET /v3/fs/{name}
-	FilesystemHasFile(name, path string) bool                                 // HEAD /v3/fs/{name}/{path}
-	FilesystemGetFile(name, path string, offset int64) (io.ReadCloser, error) // GET /v3/fs/{name}/{path}
-	FilesystemDeleteFile(name, path string) error                             // DELETE /v3/fs/{name}/{path}
-	FilesystemAddFile(name, path string, data io.Reader) error                // PUT /v3/fs/{name}/{path}
+	FilesystemList(name, pattern, sort, order string) ([]api.FileInfo, error)       // GET /v3/fs/{name}
+	FilesystemHasFile(name, path string) bool                                       // HEAD /v3/fs/{name}/{path}
+	FilesystemGetFile(name, path string) (io.ReadCloser, error)                     // GET /v3/fs/{name}/{path}
+	FilesystemGetFileOffset(name, path string, offset int64) (io.ReadCloser, error) // GET /v3/fs/{name}/{path}
+	FilesystemDeleteFile(name, path string) error                                   // DELETE /v3/fs/{name}/{path}
+	FilesystemAddFile(name, path string, data io.Reader) error                      // PUT /v3/fs/{name}/{path}
 
 	Log() ([]api.LogEvent, error) // GET /v3/log
 
