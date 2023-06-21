@@ -63,7 +63,7 @@ type RestClient interface {
 
 	FilesystemList(name, pattern, sort, order string) ([]api.FileInfo, error) // GET /v3/fs/{name}
 	FilesystemHasFile(name, path string) bool                                 // HEAD /v3/fs/{name}/{path}
-	FilesystemGetFile(name, path string) (io.ReadCloser, error)               // GET /v3/fs/{name}/{path}
+	FilesystemGetFile(name, path string, offset int64) (io.ReadCloser, error) // GET /v3/fs/{name}/{path}
 	FilesystemDeleteFile(name, path string) error                             // DELETE /v3/fs/{name}/{path}
 	FilesystemAddFile(name, path string, data io.Reader) error                // PUT /v3/fs/{name}/{path}
 
@@ -483,7 +483,7 @@ func (r *restclient) request(req *http.Request) (int, io.ReadCloser, error) {
 	return resp.StatusCode, resp.Body, nil
 }
 
-func (r *restclient) stream(method, path string, query *url.Values, contentType string, data io.Reader) (io.ReadCloser, error) {
+func (r *restclient) stream(method, path string, query *url.Values, header http.Header, contentType string, data io.Reader) (io.ReadCloser, error) {
 	if err := r.checkVersion(method, r.prefix+path); err != nil {
 		return nil, err
 	}
@@ -496,6 +496,10 @@ func (r *restclient) stream(method, path string, query *url.Values, contentType 
 	req, err := http.NewRequest(method, u, data)
 	if err != nil {
 		return nil, err
+	}
+
+	if header != nil {
+		req.Header = header.Clone()
 	}
 
 	if method == "POST" || method == "PUT" {
@@ -553,8 +557,8 @@ func (r *restclient) stream(method, path string, query *url.Values, contentType 
 	return body, nil
 }
 
-func (r *restclient) call(method, path string, query *url.Values, contentType string, data io.Reader) ([]byte, error) {
-	body, err := r.stream(method, path, query, contentType, data)
+func (r *restclient) call(method, path string, query *url.Values, header http.Header, contentType string, data io.Reader) ([]byte, error) {
+	body, err := r.stream(method, path, query, header, contentType, data)
 	if err != nil {
 		return nil, err
 	}

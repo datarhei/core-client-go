@@ -15,7 +15,7 @@ func (r *restclient) MemFSHasFile(path string) bool {
 }
 
 func (r *restclient) MemFSGetFile(path string) (io.ReadCloser, error) {
-	return r.FilesystemGetFile("mem", path)
+	return r.FilesystemGetFile("mem", path, 0)
 }
 
 func (r *restclient) MemFSDeleteFile(path string) error {

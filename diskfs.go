@@ -15,7 +15,7 @@ func (r *restclient) DiskFSHasFile(path string) bool {
 }
 
 func (r *restclient) DiskFSGetFile(path string) (io.ReadCloser, error) {
-	return r.FilesystemGetFile("disk", path)
+	return r.FilesystemGetFile("disk", path, 0)
 }
 
 func (r *restclient) DiskFSDeleteFile(path string) error {
