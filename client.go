@@ -110,6 +110,14 @@ type RestClient interface {
 	ClusterDBLocks() ([]api.ClusterLock, error)         // GET /v3/cluster/db/locks
 	ClusterDBKeyValues() (api.ClusterKVS, error)        // GET /v3/cluster/db/kv
 
+	ClusterIdentitiesList() ([]api.IAMUser, error)                   // GET /v3/cluster/iam/user
+	ClusterIdentity(name string) (api.IAMUser, error)                // GET /v3/cluster/iam/user/{name}
+	ClusterIdentityAdd(u api.IAMUser) error                          // POST /v3/cluster/iam/user
+	ClusterIdentityUpdate(name string, u api.IAMUser) error          // PUT /v3/cluster/iam/user/{name}
+	ClusterIdentitySetPolicies(name string, p []api.IAMPolicy) error // PUT /v3/cluster/iam/user/{name}/policy
+	ClusterIdentityDelete(name string) error                         // DELETE /v3/cluster/iam/user/{name}
+	ClusterIAMReload() error                                         // PUT /v3/cluster/iam/reload
+
 	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
 	SRTChannels() ([]api.SRTChannel, error)   // GET /v3/srt
 
