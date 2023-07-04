@@ -100,7 +100,7 @@ type RestClient interface {
 	Cluster() (api.ClusterAbout, error)      // GET /v3/cluster
 	ClusterHealthy() (bool, error)           // GET /v3/cluster/healthy
 	ClusterSnapshot() (io.ReadCloser, error) // GET /v3/cluster/snapshot
-	ClusterLeave() error                     // GET /v3/cluster/leave
+	ClusterLeave() error                     // PUT /v3/cluster/leave
 
 	ClusterDBProcessList() ([]api.Process, error)       // GET /v3/cluster/db/process
 	ClusterDBProcess(id ProcessID) (api.Process, error) // GET /v3/cluster/db/process/{id}
@@ -109,6 +109,15 @@ type RestClient interface {
 	ClusterDBPolicies() ([]api.IAMPolicy, error)        // GET /v3/cluster/db/policies
 	ClusterDBLocks() ([]api.ClusterLock, error)         // GET /v3/cluster/db/locks
 	ClusterDBKeyValues() (api.ClusterKVS, error)        // GET /v3/cluster/db/kv
+
+	ClusterProcessList(opts ProcessListOptions) ([]api.Process, error)               // GET /v3/cluster/process
+	ClusterProcess(id ProcessID, filter []string) (api.Process, error)               // POST /v3/cluster/process
+	ClusterProcessAdd(p api.ProcessConfig) error                                     // GET /v3/cluster/process/{id}
+	ClusterProcessUpdate(id ProcessID, p api.ProcessConfig) error                    // PUT /v3/cluster/process/{id}
+	ClusterProcessDelete(id ProcessID) error                                         // DELETE /v3/cluster/process/{id}
+	ClusterProcessCommand(id ProcessID, command string) error                        // PUT /v3/cluster/process/{id}/command
+	ClusterProcessMetadata(id ProcessID, key string) (api.Metadata, error)           // GET /v3/cluster/process/{id}/metadata/{key}
+	ClusterProcessMetadataSet(id ProcessID, key string, metadata api.Metadata) error // PUT /v3/cluster/process/{id}/metadata/{key}
 
 	ClusterIdentitiesList() ([]api.IAMUser, error)                   // GET /v3/cluster/iam/user
 	ClusterIdentity(name string) (api.IAMUser, error)                // GET /v3/cluster/iam/user/{name}
@@ -219,40 +228,148 @@ func New(config Config) (RestClient, error) {
 		return v
 	}
 
+	mustNewGlob := func(pattern string) glob.Glob {
+		return glob.MustCompile(pattern, '/')
+	}
+
 	r.version.methods = map[string][]apiconstraint{
 		"GET": {
 			{
-				path:       glob.MustCompile("/api/v3/srt", '/'),
+				path:       mustNewGlob("/api/v3/srt"),
 				constraint: mustNewConstraint("^16.9.0"),
 			},
 			{
-				path:       glob.MustCompile("/api/v3/metrics", '/'),
+				path:       mustNewGlob("/api/v3/metrics"),
 				constraint: mustNewConstraint("^16.10.0"),
 			},
 			{
-				path:       glob.MustCompile("/api/v3/iam/user"),
+				path:       mustNewGlob("/api/v3/iam/user"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/healthy"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/snapshot"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/process"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/process/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/user"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/user/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/policies"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/locks"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/db/kv"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*/metadata/**"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user/*"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},
 		"POST": {
 			{
-				path:       glob.MustCompile("/api/v3/iam/user", '/'),
+				path:       mustNewGlob("/api/v3/iam/user"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},
 		"PUT": {
 			{
-				path:       glob.MustCompile("/api/v3/iam/user/*", '/'),
+				path:       mustNewGlob("/api/v3/iam/user/*"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 			{
-				path:       glob.MustCompile("/api/v3/iam/user/*/policy", '/'),
+				path:       mustNewGlob("/api/v3/iam/user/*/policy"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/leave"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*/command"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*/metadata/**"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user/*/policy"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/reload"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},
 		"DELETE": {
 			{
-				path:       glob.MustCompile("/api/v3/iam/user/*", '/'),
+				path:       mustNewGlob("/api/v3/iam/user/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/{id}"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/iam/user/{name}"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},
