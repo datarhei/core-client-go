@@ -130,8 +130,9 @@ type RestClient interface {
 	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
 	SRTChannels() ([]api.SRTChannel, error)   // GET /v3/srt
 
-	Sessions(collectors []string) (api.SessionsSummary, error)      // GET /v3/session
-	SessionsActive(collectors []string) (api.SessionsActive, error) // GET /v3/session/active
+	Sessions(collectors []string) (api.SessionsSummary, error)                                  // GET /v3/session
+	SessionsActive(collectors []string) (api.SessionsActive, error)                             // GET /v3/session/active
+	SessionToken(name string, req []api.SessionTokenRequest) ([]api.SessionTokenRequest, error) // PUT /v3/session/token/{username}
 
 	Skills() (api.Skills, error) // GET /v3/skills
 	SkillsReload() error         // GET /v3/skills/reload
@@ -356,6 +357,10 @@ func New(config Config) (RestClient, error) {
 			},
 			{
 				path:       mustNewGlob("/v3/cluster/iam/reload"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/session/token/*"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},
