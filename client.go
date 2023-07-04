@@ -14,6 +14,7 @@ import (
 	"github.com/datarhei/core-client-go/v16/api"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/gobwas/glob"
 )
 
 const (
@@ -89,6 +90,13 @@ type RestClient interface {
 	ProcessMetadata(id ProcessID, key string) (api.Metadata, error)           // GET /v3/process/{id}/metadata/{key}
 	ProcessMetadataSet(id ProcessID, key string, metadata api.Metadata) error // PUT /v3/process/{id}/metadata/{key}
 
+	IdentitiesList() ([]api.IAMUser, error)                   // GET /v3/iam/user
+	Identity(name string) (api.IAMUser, error)                // GET /v3/iam/user/{name}
+	IdentityAdd(u api.IAMUser) error                          // POST /v3/iam/user
+	IdentityUpdate(name string, u api.IAMUser) error          // PUT /v3/iam/user/{name}
+	IdentitySetPolicies(name string, p []api.IAMPolicy) error // PUT /v3/iam/user/{name}/policy
+	IdentityDelete(name string) error                         // DELETE /v3/iam/user/{name}
+
 	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
 	SRTChannels() ([]api.SRTChannel, error)   // GET /v3/srt
 
@@ -121,6 +129,11 @@ type Config struct {
 	Client HTTPClient
 }
 
+type apiconstraint struct {
+	path       glob.Glob
+	constraint *semver.Constraints
+}
+
 // restclient implements the RestClient interface.
 type restclient struct {
 	address      string
@@ -136,7 +149,7 @@ type restclient struct {
 
 	version struct {
 		connectedCore *semver.Version
-		methods       map[string]*semver.Constraints
+		methods       map[string][]apiconstraint
 	}
 }
 
@@ -185,9 +198,43 @@ func New(config Config) (RestClient, error) {
 		return v
 	}
 
-	r.version.methods = map[string]*semver.Constraints{
-		"GET/api/v3/srt":     mustNewConstraint("^16.9.0"),
-		"GET/api/v3/metrics": mustNewConstraint("^16.10.0"),
+	r.version.methods = map[string][]apiconstraint{
+		"GET": {
+			{
+				path:       glob.MustCompile("/api/v3/srt", '/'),
+				constraint: mustNewConstraint("^16.9.0"),
+			},
+			{
+				path:       glob.MustCompile("/api/v3/metrics", '/'),
+				constraint: mustNewConstraint("^16.10.0"),
+			},
+			{
+				path:       glob.MustCompile("/api/v3/iam/user"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+		},
+		"POST": {
+			{
+				path:       glob.MustCompile("/api/v3/iam/user", '/'),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+		},
+		"PUT": {
+			{
+				path:       glob.MustCompile("/api/v3/iam/user/*", '/'),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       glob.MustCompile("/api/v3/iam/user/*/policy", '/'),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+		},
+		"DELETE": {
+			{
+				path:       glob.MustCompile("/api/v3/iam/user/*", '/'),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+		},
 	}
 
 	about, err := r.info()
@@ -398,7 +445,22 @@ func (r *restclient) login() error {
 }
 
 func (r *restclient) checkVersion(method, path string) error {
-	c := r.version.methods[method+path]
+	constraints := r.version.methods[method]
+	if constraints == nil {
+		return nil
+	}
+
+	var c *semver.Constraints = nil
+
+	for _, constraint := range constraints {
+		if !constraint.path.Match(path) {
+			continue
+		}
+
+		c = constraint.constraint
+		break
+	}
+
 	if c == nil {
 		return nil
 	}
@@ -407,7 +469,7 @@ func (r *restclient) checkVersion(method, path string) error {
 	defer r.aboutLock.RUnlock()
 
 	if !c.Check(r.version.connectedCore) {
-		return fmt.Errorf("this method is only available in version %s of the core", c.String())
+		return fmt.Errorf("this method is only available as of version %s of the core", c.String())
 	}
 
 	return nil
