@@ -97,6 +97,19 @@ type RestClient interface {
 	IdentitySetPolicies(name string, p []api.IAMPolicy) error // PUT /v3/iam/user/{name}/policy
 	IdentityDelete(name string) error                         // DELETE /v3/iam/user/{name}
 
+	Cluster() (api.ClusterAbout, error)      // GET /v3/cluster
+	ClusterHealthy() (bool, error)           // GET /v3/cluster/healthy
+	ClusterSnapshot() (io.ReadCloser, error) // GET /v3/cluster/snapshot
+	ClusterLeave() error                     // GET /v3/cluster/leave
+
+	ClusterDBProcessList() ([]api.Process, error)       // GET /v3/cluster/db/process
+	ClusterDBProcess(id ProcessID) (api.Process, error) // GET /v3/cluster/db/process/{id}
+	ClusterDBUserList() ([]api.IAMUser, error)          // GET /v3/cluster/db/user
+	ClusterDBUser(name string) (api.IAMUser, error)     // GET /v3/cluster/db/user/{name}
+	ClusterDBPolicies() ([]api.IAMPolicy, error)        // GET /v3/cluster/db/policies
+	ClusterDBLocks() ([]api.ClusterLock, error)         // GET /v3/cluster/db/locks
+	ClusterDBKeyValues() (api.ClusterKVS, error)        // GET /v3/cluster/db/kv
+
 	RTMPChannels() ([]api.RTMPChannel, error) // GET /v3/rtmp
 	SRTChannels() ([]api.SRTChannel, error)   // GET /v3/srt
 
