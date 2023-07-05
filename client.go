@@ -118,6 +118,7 @@ type RestClient interface {
 	ClusterProcessCommand(id ProcessID, command string) error                        // PUT /v3/cluster/process/{id}/command
 	ClusterProcessMetadata(id ProcessID, key string) (api.Metadata, error)           // GET /v3/cluster/process/{id}/metadata/{key}
 	ClusterProcessMetadataSet(id ProcessID, key string, metadata api.Metadata) error // PUT /v3/cluster/process/{id}/metadata/{key}
+	ClusterProcessProbe(id ProcessID) (api.Probe, error)                             // GET /v3/cluster/process/{id}/probe
 
 	ClusterIdentitiesList() ([]api.IAMUser, error)                   // GET /v3/cluster/iam/user
 	ClusterIdentity(name string) (api.IAMUser, error)                // GET /v3/cluster/iam/user/{name}
@@ -305,6 +306,10 @@ func New(config Config) (RestClient, error) {
 			},
 			{
 				path:       mustNewGlob("/v3/cluster/iam/user/*"),
+				constraint: mustNewConstraint("^16.14.0"),
+			},
+			{
+				path:       mustNewGlob("/v3/cluster/process/*/probe"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},
 		},

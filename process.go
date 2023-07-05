@@ -212,7 +212,7 @@ func (r *restclient) processMetadataSet(where string, id ProcessID, key string, 
 
 	path := "/v3/process/" + url.PathEscape(id.ID) + "/metadata/" + url.PathEscape(key)
 	if where == "cluster" {
-		path = "/v3/process/" + url.PathEscape(id.ID) + "/metadata/" + url.PathEscape(key)
+		path = "/v3/cluster/process/" + url.PathEscape(id.ID) + "/metadata/" + url.PathEscape(key)
 	}
 
 	e := json.NewEncoder(&buf)
@@ -227,6 +227,27 @@ func (r *restclient) processMetadataSet(where string, id ProcessID, key string, 
 	}
 
 	return nil
+}
+
+func (r *restclient) processProbe(where string, id ProcessID) (api.Probe, error) {
+	var p api.Probe
+
+	path := "/v3/process/" + url.PathEscape(id.ID) + "/probe"
+	if where == "cluster" {
+		path = "/v3/cluster/process/" + url.PathEscape(id.ID) + "/probe"
+	}
+
+	query := &url.Values{}
+	query.Set("domain", id.Domain)
+
+	data, err := r.call("GET", path, query, nil, "", nil)
+	if err != nil {
+		return p, err
+	}
+
+	err = json.Unmarshal(data, &p)
+
+	return p, err
 }
 
 func (r *restclient) ProcessList(opts ProcessListOptions) ([]api.Process, error) {
@@ -262,19 +283,7 @@ func (r *restclient) ProcessMetadataSet(id ProcessID, key string, metadata api.M
 }
 
 func (r *restclient) ProcessProbe(id ProcessID) (api.Probe, error) {
-	var p api.Probe
-
-	query := &url.Values{}
-	query.Set("domain", id.Domain)
-
-	data, err := r.call("GET", "/v3/process/"+url.PathEscape(id.ID)+"/probe", query, nil, "", nil)
-	if err != nil {
-		return p, err
-	}
-
-	err = json.Unmarshal(data, &p)
-
-	return p, err
+	return r.processProbe("", id)
 }
 
 func (r *restclient) ProcessConfig(id ProcessID) (api.ProcessConfig, error) {
