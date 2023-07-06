@@ -669,9 +669,10 @@ func (r *restclient) info() (api.About, error) {
 		req.Header.Add("Authorization", "Bearer "+r.accessToken)
 	}
 
-	status, body, err := r.request(req)
-	if err != nil {
-		return api.About{}, err
+	status, body, _ := r.request(req)
+	if status == http.StatusUnauthorized {
+		req.Header.Del("Authorization")
+		status, body, _ = r.request(req)
 	}
 
 	if status != 200 {
