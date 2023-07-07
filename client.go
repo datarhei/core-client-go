@@ -184,17 +184,17 @@ func (t *Token) Set(token string) {
 		return
 	}
 
-	floatToTime := func(t float64) time.Time {
+	floatToTime := func(t float64, offset time.Duration) time.Time {
 		sec, dec := math.Modf(t)
-		return time.Unix(int64(sec), int64(dec*(1e9)))
+		return time.Unix(int64(sec), int64(dec*(1e9))).Add(offset)
 	}
 
 	switch exp := sub.(type) {
 	case float64:
-		t.expiresAt = floatToTime(exp)
+		t.expiresAt = floatToTime(exp, -15*time.Second)
 	case json.Number:
 		v, _ := exp.Float64()
-		t.expiresAt = floatToTime(v)
+		t.expiresAt = floatToTime(v, -15*time.Second)
 	}
 }
 
