@@ -104,11 +104,11 @@ type RestClient interface {
 	ClusterSnapshot() (io.ReadCloser, error) // GET /v3/cluster/snapshot
 	ClusterLeave() error                     // PUT /v3/cluster/leave
 
-	ClusterNodeList() ([]api.ClusterNode, error)              // GET /v3/cluster/node
-	ClusterNode(id string) (api.ClusterNode, error)           // GET /v3/cluster/node/{id}
-	ClusterNodeFiles(id string) (api.ClusterNodeFiles, error) // GET /v3/cluster/node/{id}/files
-	ClusterNodeProcessList(id string) ([]api.Process, error)  // GET /v3/cluster/node/{id}/process
-	ClusterNodeVersion(id string) (api.Version, error)        // GET /v3/cluster/node/{id}/version
+	ClusterNodeList() ([]api.ClusterNode, error)                                      // GET /v3/cluster/node
+	ClusterNode(id string) (api.ClusterNode, error)                                   // GET /v3/cluster/node/{id}
+	ClusterNodeFiles(id string) (api.ClusterNodeFiles, error)                         // GET /v3/cluster/node/{id}/files
+	ClusterNodeProcessList(id string, opts ProcessListOptions) ([]api.Process, error) // GET /v3/cluster/node/{id}/process
+	ClusterNodeVersion(id string) (api.Version, error)                                // GET /v3/cluster/node/{id}/version
 
 	ClusterDBProcessList() ([]api.Process, error)       // GET /v3/cluster/db/process
 	ClusterDBProcess(id ProcessID) (api.Process, error) // GET /v3/cluster/db/process/{id}

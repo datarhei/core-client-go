@@ -46,10 +46,10 @@ func (r *restclient) ClusterNodeFiles(id string) (api.ClusterNodeFiles, error) {
 	return files, err
 }
 
-func (r *restclient) ClusterNodeProcessList(id string) ([]api.Process, error) {
+func (r *restclient) ClusterNodeProcessList(id string, opts ProcessListOptions) ([]api.Process, error) {
 	var processes []api.Process
 
-	data, err := r.call("GET", "/v3/cluster/node/"+url.PathEscape(id)+"/process", nil, nil, "", nil)
+	data, err := r.call("GET", "/v3/cluster/node/"+url.PathEscape(id)+"/process", opts.Query(), nil, "", nil)
 	if err != nil {
 		return processes, err
 	}
