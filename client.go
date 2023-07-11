@@ -110,14 +110,14 @@ type RestClient interface {
 	ClusterNodeProcessList(id string, opts ProcessListOptions) ([]api.Process, error) // GET /v3/cluster/node/{id}/process
 	ClusterNodeVersion(id string) (api.Version, error)                                // GET /v3/cluster/node/{id}/version
 
-	ClusterDBProcessList() ([]api.Process, error)            // GET /v3/cluster/db/process
-	ClusterDBProcess(id ProcessID) (api.Process, error)      // GET /v3/cluster/db/process/{id}
-	ClusterDBUserList() ([]api.IAMUser, error)               // GET /v3/cluster/db/user
-	ClusterDBUser(name string) (api.IAMUser, error)          // GET /v3/cluster/db/user/{name}
-	ClusterDBPolicies() ([]api.IAMPolicy, error)             // GET /v3/cluster/db/policies
-	ClusterDBLocks() ([]api.ClusterLock, error)              // GET /v3/cluster/db/locks
-	ClusterDBKeyValues() (api.ClusterKVS, error)             // GET /v3/cluster/db/kv
-	ClusterDBProcessNodeMap() (api.ClusterProcessMap, error) // GET /v3/cluster/db/map/process
+	ClusterDBProcessList() ([]api.Process, error)        // GET /v3/cluster/db/process
+	ClusterDBProcess(id ProcessID) (api.Process, error)  // GET /v3/cluster/db/process/{id}
+	ClusterDBUserList() ([]api.IAMUser, error)           // GET /v3/cluster/db/user
+	ClusterDBUser(name string) (api.IAMUser, error)      // GET /v3/cluster/db/user/{name}
+	ClusterDBPolicies() ([]api.IAMPolicy, error)         // GET /v3/cluster/db/policies
+	ClusterDBLocks() ([]api.ClusterLock, error)          // GET /v3/cluster/db/locks
+	ClusterDBKeyValues() (api.ClusterKVS, error)         // GET /v3/cluster/db/kv
+	ClusterDBProcessMap() (api.ClusterProcessMap, error) // GET /v3/cluster/db/map/process
 
 	ClusterProcessList(opts ProcessListOptions) ([]api.Process, error)               // GET /v3/cluster/process
 	ClusterProcess(id ProcessID, filter []string) (api.Process, error)               // POST /v3/cluster/process
