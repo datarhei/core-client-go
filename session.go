@@ -14,7 +14,7 @@ func (r *restclient) Sessions(collectors []string) (api.SessionsSummary, error) 
 	values := url.Values{}
 	values.Set("collectors", strings.Join(collectors, ","))
 
-	data, err := r.call("GET", "/v3/sessions?"+values.Encode(), "", nil)
+	data, err := r.call("GET", "/v3/session?"+values.Encode(), "", nil)
 	if err != nil {
 		return sessions, err
 	}
@@ -30,7 +30,7 @@ func (r *restclient) SessionsActive(collectors []string) (api.SessionsActive, er
 	values := url.Values{}
 	values.Set("collectors", strings.Join(collectors, ","))
 
-	data, err := r.call("GET", "/v3/sessions/active?"+values.Encode(), "", nil)
+	data, err := r.call("GET", "/v3/session/active?"+values.Encode(), "", nil)
 	if err != nil {
 		return sessions, err
 	}
