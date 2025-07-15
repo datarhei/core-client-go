@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"net/url"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/datarhei/core-client-go/v16/api"
 )
 
-func (r *restclient) identitiesList(where string) ([]api.IAMUser, error) {
+func (r *restclient) identitiesList(where, domain string) ([]api.IAMUser, error) {
 	var users []api.IAMUser
 
 	path := "/v3/iam/user"
@@ -17,7 +17,10 @@ func (r *restclient) identitiesList(where string) ([]api.IAMUser, error) {
 		path = "/v3/cluster/iam/user"
 	}
 
-	data, err := r.call("GET", path, nil, nil, "", nil)
+	query := &url.Values{}
+	query.Set("domain", domain)
+
+	data, err := r.call("GET", path, query, nil, "", nil)
 	if err != nil {
 		return users, err
 	}
@@ -27,7 +30,7 @@ func (r *restclient) identitiesList(where string) ([]api.IAMUser, error) {
 	return users, err
 }
 
-func (r *restclient) identity(where, name string) (api.IAMUser, error) {
+func (r *restclient) identity(where, name, domain string) (api.IAMUser, error) {
 	var user api.IAMUser
 
 	path := "/v3/iam/user/" + url.PathEscape(name)
@@ -35,7 +38,10 @@ func (r *restclient) identity(where, name string) (api.IAMUser, error) {
 		path = "/v3/cluster/iam/user/" + url.PathEscape(name)
 	}
 
-	data, err := r.call("GET", path, nil, nil, "", nil)
+	query := &url.Values{}
+	query.Set("domain", domain)
+
+	data, err := r.call("GET", path, query, nil, "", nil)
 	if err != nil {
 		return user, err
 	}
@@ -45,7 +51,7 @@ func (r *restclient) identity(where, name string) (api.IAMUser, error) {
 	return user, err
 }
 
-func (r *restclient) identityAdd(where string, u api.IAMUser) error {
+func (r *restclient) identityAdd(where, domain string, u api.IAMUser) error {
 	var buf bytes.Buffer
 
 	path := "/v3/iam/user"
@@ -53,10 +59,13 @@ func (r *restclient) identityAdd(where string, u api.IAMUser) error {
 		path = "/v3/cluster/iam/user"
 	}
 
+	query := &url.Values{}
+	query.Set("domain", domain)
+
 	e := json.NewEncoder(&buf)
 	e.Encode(u)
 
-	_, err := r.call("POST", path, nil, nil, "application/json", &buf)
+	_, err := r.call("POST", path, query, nil, "application/json", &buf)
 	if err != nil {
 		return err
 	}
@@ -64,7 +73,7 @@ func (r *restclient) identityAdd(where string, u api.IAMUser) error {
 	return nil
 }
 
-func (r *restclient) identityUpdate(where, name string, u api.IAMUser) error {
+func (r *restclient) identityUpdate(where, name, domain string, u api.IAMUser) error {
 	var buf bytes.Buffer
 
 	path := "/v3/iam/user/" + url.PathEscape(name)
@@ -72,10 +81,13 @@ func (r *restclient) identityUpdate(where, name string, u api.IAMUser) error {
 		path = "/v3/cluster/iam/user/" + url.PathEscape(name)
 	}
 
+	query := &url.Values{}
+	query.Set("domain", domain)
+
 	e := json.NewEncoder(&buf)
 	e.Encode(u)
 
-	_, err := r.call("PUT", path, nil, nil, "application/json", &buf)
+	_, err := r.call("PUT", path, query, nil, "application/json", &buf)
 	if err != nil {
 		return err
 	}
@@ -83,7 +95,7 @@ func (r *restclient) identityUpdate(where, name string, u api.IAMUser) error {
 	return nil
 }
 
-func (r *restclient) identitySetPolicies(where, name string, p []api.IAMPolicy) error {
+func (r *restclient) identitySetPolicies(where, name, domain string, p []api.IAMPolicy) error {
 	var buf bytes.Buffer
 
 	path := "/v3/iam/user/" + url.PathEscape(name) + "/policy"
@@ -91,10 +103,13 @@ func (r *restclient) identitySetPolicies(where, name string, p []api.IAMPolicy) 
 		path = "/v3/cluster/iam/user/" + url.PathEscape(name) + "/policy"
 	}
 
+	query := &url.Values{}
+	query.Set("domain", domain)
+
 	e := json.NewEncoder(&buf)
 	e.Encode(p)
 
-	_, err := r.call("PUT", path, nil, nil, "application/json", &buf)
+	_, err := r.call("PUT", path, query, nil, "application/json", &buf)
 	if err != nil {
 		return err
 	}
@@ -102,37 +117,40 @@ func (r *restclient) identitySetPolicies(where, name string, p []api.IAMPolicy) 
 	return nil
 }
 
-func (r *restclient) identityDelete(where, name string) error {
+func (r *restclient) identityDelete(where, name, domain string) error {
 	path := "/v3/iam/user/" + url.PathEscape(name)
 	if where == "cluster" {
 		path = "/v3/cluster/iam/user/" + url.PathEscape(name)
 	}
 
-	_, err := r.call("DELETE", path, nil, nil, "", nil)
+	query := &url.Values{}
+	query.Set("domain", domain)
+
+	_, err := r.call("DELETE", path, query, nil, "", nil)
 
 	return err
 }
 
-func (r *restclient) IdentitiesList() ([]api.IAMUser, error) {
-	return r.identitiesList("")
+func (r *restclient) IdentitiesList(domain string) ([]api.IAMUser, error) {
+	return r.identitiesList("", domain)
 }
 
-func (r *restclient) Identity(name string) (api.IAMUser, error) {
-	return r.identity("", name)
+func (r *restclient) Identity(name, domain string) (api.IAMUser, error) {
+	return r.identity("", name, domain)
 }
 
-func (r *restclient) IdentityAdd(u api.IAMUser) error {
-	return r.identityAdd("", u)
+func (r *restclient) IdentityAdd(domain string, u api.IAMUser) error {
+	return r.identityAdd("", domain, u)
 }
 
-func (r *restclient) IdentityUpdate(name string, u api.IAMUser) error {
-	return r.identityUpdate("", name, u)
+func (r *restclient) IdentityUpdate(name, domain string, u api.IAMUser) error {
+	return r.identityUpdate("", name, domain, u)
 }
 
-func (r *restclient) IdentitySetPolicies(name string, p []api.IAMPolicy) error {
-	return r.identitySetPolicies("", name, p)
+func (r *restclient) IdentitySetPolicies(name, domain string, p []api.IAMPolicy) error {
+	return r.identitySetPolicies("", name, domain, p)
 }
 
-func (r *restclient) IdentityDelete(name string) error {
-	return r.identityDelete("", name)
+func (r *restclient) IdentityDelete(name, domain string) error {
+	return r.identityDelete("", name, domain)
 }

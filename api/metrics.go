@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 )
 
 type MetricsDescription struct {

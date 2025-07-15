@@ -6,8 +6,9 @@ import (
 
 	gojson "encoding/json"
 
+	"encoding/json"
+
 	"github.com/datarhei/core-client-go/v16/api"
-	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/require"
 )
 

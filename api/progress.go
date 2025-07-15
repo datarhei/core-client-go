@@ -6,6 +6,16 @@ type ProgressIOFramerate struct {
 	Average float64 `json:"avg" swaggertype:"number" jsonschema:"type=number"`
 }
 
+type ProgressIOTee struct {
+	ID                   string `json:"id"`
+	Address              string `json:"address"`
+	Format               string `json:"format"`
+	State                string `json:"state"`
+	Fifo                 bool   `json:"fifo_enabled"`
+	FifoRecoveryAttempts uint64 `json:"fifo_recovery_attempts_total"`
+	FifoState            string `json:"fifo_state"`
+}
+
 // ProgressIO represents the progress of an ffmpeg input or output
 type ProgressIO struct {
 	ID      string `json:"id" jsonschema:"minLength=1"`
@@ -41,6 +51,9 @@ type ProgressIO struct {
 
 	// avstream
 	AVstream *AVstream `json:"avstream"`
+
+	// Format specific
+	Tee []ProgressIOTee `json:"tee"`
 }
 
 // Progress represents the progress of an ffmpeg process
@@ -63,8 +76,10 @@ type Progress struct {
 
 type GraphElement struct {
 	Index     int    `json:"index"`
+	ID        string `json:"id"`
 	Name      string `json:"name"`
 	Filter    string `json:"filter"`
+	DstID     string `json:"dst_id"`
 	DstName   string `json:"dst_name"`
 	DstFilter string `json:"dst_filter"`
 	Inpad     string `json:"inpad"`
@@ -82,6 +97,7 @@ type GraphMapping struct {
 	Input  int    `json:"input"`
 	Output int    `json:"output"`
 	Index  int    `json:"index"`
+	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Copy   bool   `json:"copy"`
 }

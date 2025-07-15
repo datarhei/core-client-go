@@ -1,6 +1,7 @@
 package coreclient
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -8,7 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/datarhei/core-client-go/v16/api"
 )
@@ -106,4 +107,44 @@ func (r *restclient) FilesystemAddFile(storage, path string, data io.Reader) err
 	_, err := r.call("PUT", "/v3/fs/"+url.PathEscape(storage)+path, nil, nil, "application/data", data)
 
 	return err
+}
+
+func (r *restclient) FilesystemMoveFile(dstfs, dstpath, srcfs, srcpath string) error {
+	fsop := api.FilesystemOperation{
+		Operation: "move",
+		Source:    srcfs + ":" + srcpath,
+		Target:    dstfs + ":" + dstpath,
+	}
+
+	var buf bytes.Buffer
+
+	e := json.NewEncoder(&buf)
+	e.Encode(fsop)
+
+	_, err := r.call("PUT", "/v3/fs", nil, nil, "application/json", &buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *restclient) FilesystemCopyFile(dstfs, dstpath, srcfs, srcpath string) error {
+	fsop := api.FilesystemOperation{
+		Operation: "copy",
+		Source:    srcfs + ":" + srcpath,
+		Target:    dstfs + ":" + dstpath,
+	}
+
+	var buf bytes.Buffer
+
+	e := json.NewEncoder(&buf)
+	e.Encode(fsop)
+
+	_, err := r.call("PUT", "/v3/fs", nil, nil, "application/json", &buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

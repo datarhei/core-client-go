@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 
 	"github.com/datarhei/core-client-go/v16/api"
 
@@ -74,6 +74,8 @@ type RestClient interface {
 	FilesystemGetFileOffset(storage, path string, offset int64) (io.ReadCloser, error) // GET /v3/fs/{storage}/{path}
 	FilesystemDeleteFile(storage, path string) error                                   // DELETE /v3/fs/{storage}/{path}
 	FilesystemAddFile(storage, path string, data io.Reader) error                      // PUT /v3/fs/{storage}/{path}
+	FilesystemMoveFile(dstfs, dstpath, srcfs, srcpath string) error                    // PUT /v3/fs
+	FilesystemCopyFile(dstfs, dstpath, srcfs, srcpath string) error                    // PUT /v3/fs
 
 	Log() ([]api.LogEvent, error)                                                   // GET /v3/log
 	Events(ctx context.Context, filters api.EventFilters) (<-chan api.Event, error) // POST /v3/events
@@ -99,13 +101,14 @@ type RestClient interface {
 	ProcessMetadataSet(id ProcessID, key string, metadata api.Metadata) error // PUT /v3/process/{id}/metadata/{key}
 
 	PlayoutStatus(id ProcessID, inputID string) (api.PlayoutStatus, error) // GET /v3/process/{id}/playout/{inputid}/status
+	PlayoutReopen(id ProcessID, inputID string) (bool, error)              // GET /v3/process/{id}/playout/{inputid}/reopen
 
-	IdentitiesList() ([]api.IAMUser, error)                   // GET /v3/iam/user
-	Identity(name string) (api.IAMUser, error)                // GET /v3/iam/user/{name}
-	IdentityAdd(u api.IAMUser) error                          // POST /v3/iam/user
-	IdentityUpdate(name string, u api.IAMUser) error          // PUT /v3/iam/user/{name}
-	IdentitySetPolicies(name string, p []api.IAMPolicy) error // PUT /v3/iam/user/{name}/policy
-	IdentityDelete(name string) error                         // DELETE /v3/iam/user/{name}
+	IdentitiesList(domain string) ([]api.IAMUser, error)              // GET /v3/iam/user
+	Identity(name, domain string) (api.IAMUser, error)                // GET /v3/iam/user/{name}
+	IdentityAdd(domain string, u api.IAMUser) error                   // POST /v3/iam/user
+	IdentityUpdate(name, domain string, u api.IAMUser) error          // PUT /v3/iam/user/{name}
+	IdentitySetPolicies(name, domain string, p []api.IAMPolicy) error // PUT /v3/iam/user/{name}/policy
+	IdentityDelete(name, domain string) error                         // DELETE /v3/iam/user/{name}
 
 	Cluster() (*api.ClusterAboutV1, *api.ClusterAboutV2, error) // GET /v3/cluster
 	ClusterHealthy() (bool, error)                              // GET /v3/cluster/healthy
@@ -150,13 +153,13 @@ type RestClient interface {
 
 	ClusterRelocateProcess(id ProcessID, nodeid string) error // PUT /v3/cluster/reallocate
 
-	ClusterIdentitiesList() ([]api.IAMUser, error)                   // GET /v3/cluster/iam/user
-	ClusterIdentity(name string) (api.IAMUser, error)                // GET /v3/cluster/iam/user/{name}
-	ClusterIdentityAdd(u api.IAMUser) error                          // POST /v3/cluster/iam/user
-	ClusterIdentityUpdate(name string, u api.IAMUser) error          // PUT /v3/cluster/iam/user/{name}
-	ClusterIdentitySetPolicies(name string, p []api.IAMPolicy) error // PUT /v3/cluster/iam/user/{name}/policy
-	ClusterIdentityDelete(name string) error                         // DELETE /v3/cluster/iam/user/{name}
-	ClusterIAMReload() error                                         // PUT /v3/cluster/iam/reload
+	ClusterIdentitiesList(domain string) ([]api.IAMUser, error)              // GET /v3/cluster/iam/user
+	ClusterIdentity(name, domain string) (api.IAMUser, error)                // GET /v3/cluster/iam/user/{name}
+	ClusterIdentityAdd(domain string, u api.IAMUser) error                   // POST /v3/cluster/iam/user
+	ClusterIdentityUpdate(name, domain string, u api.IAMUser) error          // PUT /v3/cluster/iam/user/{name}
+	ClusterIdentitySetPolicies(name, domain string, p []api.IAMPolicy) error // PUT /v3/cluster/iam/user/{name}/policy
+	ClusterIdentityDelete(name, domain string) error                         // DELETE /v3/cluster/iam/user/{name}
+	ClusterIAMReload() error                                                 // PUT /v3/cluster/iam/reload
 
 	ClusterEvents(ctx context.Context, filters api.EventFilters) (<-chan api.Event, error) // POST /v3/cluster/events
 
@@ -447,7 +450,8 @@ func New(config Config) (RestClient, error) {
 			{
 				path:       mustNewGlob("/v3/cluster/db/map/process"),
 				constraint: mustNewConstraint("^16.14.0"),
-			}, {
+			},
+			{
 				path:       mustNewGlob("/v3/cluster/node/*/fs/*"),
 				constraint: mustNewConstraint("^16.14.0"),
 			},

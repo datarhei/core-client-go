@@ -3,8 +3,9 @@ package coreclient
 import (
 	"bytes"
 
+	"encoding/json"
+
 	"github.com/datarhei/core-client-go/v16/api"
-	"github.com/goccy/go-json"
 )
 
 func (r *restclient) ClusterProcessList(opts ProcessListOptions) ([]api.Process, error) {

@@ -1,6 +1,8 @@
 package api
 
-import "strings"
+import (
+	"strings"
+)
 
 type ProcessID struct {
 	ID     string `json:"id"`
@@ -58,9 +60,13 @@ type ProcessConfigIOCleanup struct {
 }
 
 type ProcessConfigLimits struct {
-	CPU     float64 `json:"cpu_usage" jsonschema:"minimum=0"`                       // percent 0-100*ncpu
-	Memory  uint64  `json:"memory_mbytes" jsonschema:"minimum=0" format:"uint64"`   // megabytes
-	WaitFor uint64  `json:"waitfor_seconds" jsonschema:"minimum=0" format:"uint64"` // seconds
+	CPU        float64 `json:"cpu_usage" jsonschema:"minimum=0"`                         // percent 0-100*ncpu
+	Memory     uint64  `json:"memory_mbytes" jsonschema:"minimum=0" format:"uint64"`     // megabytes
+	GPUUsage   float64 `json:"gpu_usage" jsonschema:"minimum=0"`                         // percent 0-100
+	GPUEncoder float64 `json:"gpu_encoder" jsonschema:"minimum=0"`                       // percent 0-100
+	GPUDecoder float64 `json:"gpu_decoder" jsonschema:"minimum=0"`                       // percent 0-100
+	GPUMemory  uint64  `json:"gpu_memory_mbytes" jsonschema:"minimum=0" format:"uint64"` // megabytes
+	WaitFor    uint64  `json:"waitfor_seconds" jsonschema:"minimum=0" format:"uint64"`   // seconds
 }
 
 // ProcessConfig represents the configuration of an ffmpeg process
@@ -68,6 +74,7 @@ type ProcessConfig struct {
 	ID             string                 `json:"id"`
 	Owner          string                 `json:"owner"`
 	Domain         string                 `json:"domain"`
+	Binary         string                 `json:"binary"`
 	Type           string                 `json:"type" validate:"oneof='ffmpeg' ''" jsonschema:"enum=ffmpeg,enum="`
 	Reference      string                 `json:"reference"`
 	Input          []ProcessConfigIO      `json:"input" validate:"required"`
@@ -97,6 +104,7 @@ type ProcessState struct {
 	LimitMode string       `json:"limit_mode"`
 	Resources ProcessUsage `json:"resources"`
 	Command   []string     `json:"command"`
+	PID       int32        `json:"pid" format:"int32"`
 }
 
 type ProcessUsageCPU struct {
@@ -109,13 +117,36 @@ type ProcessUsageCPU struct {
 }
 
 type ProcessUsageMemory struct {
-	Current uint64  `json:"cur" format:"uint64"`                               // bytes
-	Average float64 `json:"avg" swaggertype:"number" jsonschema:"type=number"` // bytes
-	Max     uint64  `json:"max" format:"uint64"`                               // bytes
-	Limit   uint64  `json:"limit" format:"uint64"`                             // bytes
+	Current uint64  `json:"cur" format:"uint64"`   // bytes
+	Average float64 `json:"avg" format:"uint64"`   // bytes
+	Max     uint64  `json:"max" format:"uint64"`   // bytes
+	Limit   uint64  `json:"limit" format:"uint64"` // bytes
+}
+
+type ProcessUsageGPUUsage struct {
+	Current float64 `json:"cur" swaggertype:"number" jsonschema:"type=number"`   // percent 0-100
+	Average float64 `json:"avg" swaggertype:"number" jsonschema:"type=number"`   // percent 0-100
+	Max     float64 `json:"max" swaggertype:"number" jsonschema:"type=number"`   // percent 0-100
+	Limit   float64 `json:"limit" swaggertype:"number" jsonschema:"type=number"` // percent 0-100
+}
+
+type ProcessUsageGPUMemory struct {
+	Current uint64 `json:"cur" format:"uint64"`   // bytes
+	Average uint64 `json:"avg" format:"uint64"`   // bytes
+	Max     uint64 `json:"max" format:"uint64"`   // bytes
+	Limit   uint64 `json:"limit" format:"uint64"` // bytes
+}
+
+type ProcessUsageGPU struct {
+	Index   int                   `json:"index"`
+	Memory  ProcessUsageGPUMemory `json:"memory_bytes"`
+	Usage   ProcessUsageGPUUsage  `json:"usage"`
+	Encoder ProcessUsageGPUUsage  `json:"encoder"`
+	Decoder ProcessUsageGPUUsage  `json:"decoder"`
 }
 
 type ProcessUsage struct {
 	CPU    ProcessUsageCPU    `json:"cpu_usage"`
 	Memory ProcessUsageMemory `json:"memory_bytes"`
+	GPU    ProcessUsageGPU    `json:"gpu"`
 }

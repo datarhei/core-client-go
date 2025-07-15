@@ -8,7 +8,7 @@ import (
 
 	"github.com/datarhei/core-client-go/v16/api"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 )
 
 func (r *restclient) ClusterEvents(ctx context.Context, filters api.EventFilters) (<-chan api.Event, error) {

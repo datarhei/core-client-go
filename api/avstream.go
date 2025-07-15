@@ -20,4 +20,16 @@ type AVstream struct {
 	Duplicating    bool       `json:"duplicating"`
 	GOP            string     `json:"gop"`
 	Mode           string     `json:"mode"`
+
+	// Codec parameter
+	Codec     string `json:"codec"`
+	Profile   int    `json:"profile"`
+	Level     int    `json:"level"`
+	Pixfmt    string `json:"pix_fmt,omitempty"`
+	Width     uint64 `json:"width,omitempty" format:"uint64"`
+	Height    uint64 `json:"height,omitempty" format:"uint64"`
+	Samplefmt string `json:"sample_fmt,omitempty"`
+	Sampling  uint64 `json:"sampling_hz,omitempty" format:"uint64"`
+	Layout    string `json:"layout,omitempty"`
+	Channels  uint64 `json:"channels,omitempty" format:"uint64"`
 }
